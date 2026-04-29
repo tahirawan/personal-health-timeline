@@ -8,7 +8,7 @@ import { BackupPanel } from './BackupPanel';
 describe('BackupPanel', () => {
   it('shows export controls and previews smart text import', async () => {
     const user = userEvent.setup();
-    const onImportEvents = vi.fn();
+    const onImportEvents = vi.fn().mockResolvedValue(true);
     const events: TimelineEvent[] = [];
 
     render(<BackupPanel events={events} onImportEvents={onImportEvents} />);
@@ -23,5 +23,37 @@ describe('BackupPanel', () => {
     await user.click(screen.getByRole('button', { name: /preview text/i }));
 
     expect(screen.getByText(/preview: 1 parsed events/i)).toBeInTheDocument();
+  });
+
+  it('loads and previews a JSON backup file', async () => {
+    const user = userEvent.setup();
+    const onImportEvents = vi.fn().mockResolvedValue(true);
+    const exportedAt = new Date('2026-04-29T10:00:00.000Z').toISOString();
+    const backup = JSON.stringify({
+      version: 1,
+      exportedAt,
+      events: [
+        {
+          id: 'bp-1',
+          type: 'bloodPressure',
+          timestamp: exportedAt,
+          systolic: 120,
+          diastolic: 75,
+          pulse: 74,
+          createdAt: exportedAt,
+          updatedAt: exportedAt,
+        },
+      ],
+    });
+
+    render(<BackupPanel events={[]} onImportEvents={onImportEvents} />);
+
+    await user.upload(
+      screen.getByLabelText(/choose backup json file/i),
+      new File([backup], 'health-timeline-backup.json', { type: 'application/json' }),
+    );
+
+    expect(screen.getByText(/selected file: health-timeline-backup\.json/i)).toBeInTheDocument();
+    expect(screen.getByText(/preview: 1 events, 1 bp/i)).toBeInTheDocument();
   });
 });

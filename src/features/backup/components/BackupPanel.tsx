@@ -1,6 +1,8 @@
 import { Download, FileJson, FileText, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 
+import type { ToastTone } from '../../../shared/components/Toast';
+import { ui } from '../../../shared/lib/uiStyles';
 import type { TimelineEvent } from '../../../shared/types/domain';
 import type { ImportMode } from '../../../shared/types/storage';
 import {
@@ -17,17 +19,24 @@ import {
 
 type BackupPanelProps = {
   events: TimelineEvent[];
-  onImportEvents: (events: TimelineEvent[], mode: ImportMode) => Promise<void>;
+  onBackToReports?: () => void;
+  onImportEvents: (events: TimelineEvent[], mode: ImportMode) => Promise<boolean>;
+  onNotify?: (tone: ToastTone, title: string, description?: string) => void;
 };
 
-export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
+export function BackupPanel({
+  events,
+  onBackToReports,
+  onImportEvents,
+  onNotify = () => undefined,
+}: BackupPanelProps) {
   const [jsonText, setJsonText] = useState('');
+  const [jsonFileName, setJsonFileName] = useState('');
   const [jsonPreview, setJsonPreview] = useState<ImportPreview | undefined>();
   const [jsonError, setJsonError] = useState('');
   const [importMode, setImportMode] = useState<ImportMode>('merge');
   const [smartText, setSmartText] = useState('');
   const [smartPreview, setSmartPreview] = useState<SmartTextImportResult | undefined>();
-  const [status, setStatus] = useState('');
 
   function download(filename: string, content: string, type: string) {
     const blob = new Blob([content], { type });
@@ -41,13 +50,15 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
 
   function previewJson() {
     setJsonError('');
-    setStatus('');
 
     try {
-      setJsonPreview(parseBackupJson(jsonText));
+      const preview = parseBackupJson(jsonText);
+      setJsonPreview(preview);
+      onNotify('success', 'Backup preview ready.', `${preview.totalEvents} events found.`);
     } catch (error) {
       setJsonPreview(undefined);
       setJsonError(toReadableImportError(error));
+      onNotify('error', 'Backup file is not valid.', toReadableImportError(error));
     }
   }
 
@@ -56,22 +67,48 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
       return;
     }
 
-    if (
-      importMode === 'replace' &&
-      !window.confirm('Replace all existing local timeline data with this backup?')
-    ) {
+    const imported = await onImportEvents(jsonPreview.backup.events, importMode);
+    if (!imported) {
       return;
     }
 
-    await onImportEvents(jsonPreview.backup.events, importMode);
-    setStatus(`Imported ${jsonPreview.totalEvents} events from JSON backup.`);
+    onNotify('success', 'JSON backup imported.', `${jsonPreview.totalEvents} events processed.`);
     setJsonPreview(undefined);
     setJsonText('');
+    setJsonFileName('');
+  }
+
+  async function handleJsonFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setJsonFileName(file.name);
+    setJsonError('');
+
+    try {
+      const text = await readFileText(file);
+      setJsonText(text);
+      const preview = parseBackupJson(text);
+      setJsonPreview(preview);
+      onNotify('success', 'Backup file loaded.', `${preview.totalEvents} events ready to review.`);
+    } catch (error) {
+      setJsonPreview(undefined);
+      const message = toReadableImportError(error);
+      setJsonError(message);
+      onNotify('error', 'Backup file is not valid.', message);
+    }
   }
 
   function previewSmartText() {
-    setStatus('');
-    setSmartPreview(parseManualTimelineText(smartText));
+    const preview = parseManualTimelineText(smartText);
+    setSmartPreview(preview);
+    onNotify(
+      preview.invalidLines.length > 0 ? 'info' : 'success',
+      'Smart text preview ready.',
+      `${preview.events.length} parsed events, ${preview.invalidLines.length} lines need review.`,
+    );
   }
 
   async function importSmartText() {
@@ -79,69 +116,118 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
       return;
     }
 
-    await onImportEvents(smartPreview.events, 'merge');
-    setStatus(`Imported ${smartPreview.events.length} parsed timeline events.`);
+    const imported = await onImportEvents(smartPreview.events, 'merge');
+    if (!imported) {
+      return;
+    }
+
+    onNotify(
+      'success',
+      'Smart text entries saved.',
+      `${smartPreview.events.length} events imported.`,
+    );
     setSmartPreview(undefined);
     setSmartText('');
   }
 
   return (
-    <section className="section-block" aria-labelledby="backup-heading">
-      <h2 id="backup-heading">Backup & import</h2>
+    <>
+      <section className={ui.section} aria-labelledby="backup-heading">
+        <div className={ui.sectionHeadingRow}>
+          <div>
+            <h2 className={ui.h2} id="backup-heading">
+              Backup & import
+            </h2>
+            <p className={ui.sectionDescription}>
+              Export files from this device or import a JSON backup after previewing it.
+            </p>
+          </div>
+          {onBackToReports ? (
+            <button className={ui.secondaryButton} type="button" onClick={onBackToReports}>
+              Back to reports
+            </button>
+          ) : null}
+        </div>
+      </section>
 
-      <div className="action-grid">
-        <button
-          className="secondary-button"
-          type="button"
-          onClick={() =>
-            download(
-              'health-timeline-backup.json',
-              exportBackupJson(events),
-              'application/json;charset=utf-8',
-            )
-          }
-        >
-          <FileJson size={18} />
-          Export JSON backup
-        </button>
-        <button
-          className="secondary-button"
-          type="button"
-          onClick={() =>
-            download(
-              'blood-pressure-readings.csv',
-              exportBloodPressureCsv(events),
-              'text/csv;charset=utf-8',
-            )
-          }
-        >
-          <Download size={18} />
-          Export BP CSV
-        </button>
-      </div>
+      <section className={ui.section} aria-labelledby="export-heading">
+        <h2 className={ui.h2} id="export-heading">
+          Export files
+        </h2>
+        <div className={ui.actionGrid}>
+          <button
+            className={ui.quickSecondaryButton}
+            type="button"
+            onClick={() =>
+              download(
+                'health-timeline-backup.json',
+                exportBackupJson(events),
+                'application/json;charset=utf-8',
+              )
+            }
+          >
+            <FileJson className={ui.quickIcon} size={18} />
+            Export JSON backup
+          </button>
+          <button
+            className={ui.quickSecondaryButton}
+            type="button"
+            onClick={() =>
+              download(
+                'blood-pressure-readings.csv',
+                exportBloodPressureCsv(events),
+                'text/csv;charset=utf-8',
+              )
+            }
+          >
+            <Download className={ui.quickIcon} size={18} />
+            Export BP CSV
+          </button>
+        </div>
+      </section>
 
-      <div className="import-panel">
-        <h3>Import JSON backup</h3>
-        <label>
-          Paste backup JSON
+      <section className={ui.section} aria-labelledby="json-import-heading">
+        <h3 className={ui.h3} id="json-import-heading">
+          Import JSON backup
+        </h3>
+        <label className={ui.label}>
+          Choose backup JSON file
+          <input
+            className={ui.fileInput}
+            type="file"
+            accept="application/json,.json"
+            onChange={handleJsonFileChange}
+          />
+          {jsonFileName ? (
+            <span className={ui.fieldHelp}>Selected file: {jsonFileName}</span>
+          ) : null}
+        </label>
+        <label className={ui.label}>
+          Or paste backup JSON
           <textarea
+            className={ui.textarea}
             rows={6}
             value={jsonText}
-            onChange={(event) => setJsonText(event.target.value)}
+            onChange={(event) => {
+              setJsonText(event.target.value);
+              setJsonPreview(undefined);
+              setJsonFileName('');
+            }}
             placeholder='{"version":1,"exportedAt":"...","events":[...]}'
           />
         </label>
-        <label className="checkbox-row">
+        <label className={ui.checkboxRow}>
           <input
+            className={ui.checkboxInput}
             type="checkbox"
             checked={importMode === 'replace'}
             onChange={(event) => setImportMode(event.target.checked ? 'replace' : 'merge')}
           />
           Replace existing local data after confirmation
         </label>
-        <div className="form-actions">
+        <div className={ui.formActions}>
           <button
-            className="secondary-button"
+            className={ui.secondaryButton}
             type="button"
             onClick={previewJson}
             disabled={!jsonText.trim()}
@@ -150,7 +236,7 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
             Preview JSON
           </button>
           <button
-            className="primary-button"
+            className={ui.primaryButton}
             type="button"
             onClick={importJson}
             disabled={!jsonPreview}
@@ -158,30 +244,33 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
             Import previewed backup
           </button>
         </div>
-        {jsonError ? <p className="field-error">{jsonError}</p> : null}
+        {jsonError ? <p className={ui.fieldError}>{jsonError}</p> : null}
         {jsonPreview ? (
-          <p className="preview-note">
+          <p className={ui.previewNote}>
             Preview: {jsonPreview.totalEvents} events, {jsonPreview.bloodPressureCount} BP,{' '}
             {jsonPreview.mealCount} meals, {jsonPreview.tabletCount} tablets,{' '}
             {jsonPreview.noteCount} notes.
           </p>
         ) : null}
-      </div>
+      </section>
 
-      <div className="import-panel">
-        <h3>Smart text import</h3>
-        <label>
+      <section className={ui.section} aria-labelledby="smart-import-heading">
+        <h3 className={ui.h3} id="smart-import-heading">
+          Smart text import
+        </h3>
+        <label className={ui.label}>
           Paste manual log text
           <textarea
+            className={ui.textarea}
             rows={8}
             value={smartText}
             onChange={(event) => setSmartText(event.target.value)}
             placeholder={`2026-04-29\n09:28 - 120/75 - 74 - After Breakfast\n09:23 - Breakfast - egg with avocado sandwich\n11:00 - Tablet`}
           />
         </label>
-        <div className="form-actions">
+        <div className={ui.formActions}>
           <button
-            className="secondary-button"
+            className={ui.secondaryButton}
             type="button"
             onClick={previewSmartText}
             disabled={!smartText.trim()}
@@ -190,7 +279,7 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
             Preview text
           </button>
           <button
-            className="primary-button"
+            className={ui.primaryButton}
             type="button"
             onClick={importSmartText}
             disabled={!smartPreview || smartPreview.events.length === 0}
@@ -199,7 +288,7 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
           </button>
         </div>
         {smartPreview ? (
-          <div className="preview-note">
+          <div className={ui.previewNote}>
             <p>
               Preview: {smartPreview.events.length} parsed events,{' '}
               {smartPreview.invalidLines.length} lines need review.
@@ -215,9 +304,32 @@ export function BackupPanel({ events, onImportEvents }: BackupPanelProps) {
             ) : null}
           </div>
         ) : null}
-      </div>
-
-      {status ? <p className="success-note">{status}</p> : null}
-    </section>
+      </section>
+    </>
   );
+}
+
+function readFileText(file: File): Promise<string> {
+  if (typeof file.text === 'function') {
+    return file.text();
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.addEventListener('load', () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error('Backup file could not be read.'));
+    });
+
+    reader.addEventListener('error', () => {
+      reject(new Error('Backup file could not be read.'));
+    });
+
+    reader.readAsText(file);
+  });
 }

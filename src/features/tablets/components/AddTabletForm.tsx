@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 
 import { FieldError } from '../../../shared/components/FieldError';
 import { toDateTimeLocalValue } from '../../../shared/lib/date';
+import { ui } from '../../../shared/lib/uiStyles';
 import type { TabletEvent } from '../../../shared/types/domain';
 import {
   tabletFormSchema,
@@ -34,38 +35,48 @@ export function AddTabletForm({ initialEvent, onSubmit, onCancel }: AddTabletFor
   });
 
   return (
-    <form className="stacked-form" onSubmit={handleSubmit(onSubmit)}>
-      <label>
+    <form className={ui.stackedForm} onSubmit={handleSubmit(onSubmit)}>
+      <label className={ui.label}>
         Time
-        <input type="datetime-local" {...register('timestampLocal')} />
+        <input className={ui.input} type="datetime-local" {...register('timestampLocal')} />
         <FieldError message={errors.timestampLocal?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Medicine name optional
-        <input type="text" placeholder="Tablet" {...register('medicationName')} />
+        <input
+          className={ui.input}
+          type="text"
+          placeholder="Tablet"
+          {...register('medicationName')}
+        />
         <FieldError message={errors.medicationName?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Dosage optional
-        <input type="text" placeholder="e.g. 5 mg" {...register('dosage')} />
+        <input className={ui.input} type="text" placeholder="e.g. 5 mg" {...register('dosage')} />
         <FieldError message={errors.dosage?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Notes optional
-        <textarea rows={2} placeholder="Taken after food" {...register('notes')} />
+        <textarea
+          className={ui.textarea}
+          rows={2}
+          placeholder="Taken after food"
+          {...register('notes')}
+        />
         <FieldError message={errors.notes?.message} />
       </label>
 
-      <div className="form-actions">
+      <div className={ui.formActions}>
         {onCancel ? (
-          <button className="secondary-button" type="button" onClick={onCancel}>
+          <button className={ui.secondaryButton} type="button" onClick={onCancel}>
             Cancel
           </button>
         ) : null}
-        <button className="primary-button" type="submit" disabled={isSubmitting}>
+        <button className={ui.primaryButton} type="submit" disabled={isSubmitting}>
           Save tablet
         </button>
       </div>

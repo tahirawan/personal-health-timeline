@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 
 import { FieldError } from '../../../shared/components/FieldError';
 import { toDateTimeLocalValue } from '../../../shared/lib/date';
+import { ui } from '../../../shared/lib/uiStyles';
 import type { BloodPressureEvent, MealRelation } from '../../../shared/types/domain';
 import {
   bloodPressureFormSchema,
@@ -52,17 +53,18 @@ export function AddBloodPressureForm({
   });
 
   return (
-    <form className="stacked-form" onSubmit={handleSubmit(onSubmit)}>
-      <label>
+    <form className={ui.stackedForm} onSubmit={handleSubmit(onSubmit)}>
+      <label className={ui.label}>
         Time
-        <input type="datetime-local" {...register('timestampLocal')} />
+        <input className={ui.input} type="datetime-local" {...register('timestampLocal')} />
         <FieldError message={errors.timestampLocal?.message} />
       </label>
 
-      <div className="form-grid two-column">
-        <label>
+      <div className={ui.formGridTwoColumn}>
+        <label className={ui.label}>
           Systolic
           <input
+            className={ui.input}
             type="number"
             inputMode="numeric"
             min="40"
@@ -72,9 +74,10 @@ export function AddBloodPressureForm({
           />
           <FieldError message={errors.systolic?.message} />
         </label>
-        <label>
+        <label className={ui.label}>
           Diastolic
           <input
+            className={ui.input}
             type="number"
             inputMode="numeric"
             min="30"
@@ -86,9 +89,10 @@ export function AddBloodPressureForm({
         </label>
       </div>
 
-      <label>
+      <label className={ui.label}>
         Pulse optional
         <input
+          className={ui.input}
           type="number"
           inputMode="numeric"
           min="30"
@@ -99,9 +103,9 @@ export function AddBloodPressureForm({
         <FieldError message={errors.pulse?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Meal relation
-        <select {...register('mealRelation')}>
+        <select className={ui.input} {...register('mealRelation')}>
           {mealRelationOptions.map((option) => (
             <option key={option.value || 'none'} value={option.value}>
               {option.label}
@@ -111,19 +115,24 @@ export function AddBloodPressureForm({
         <FieldError message={errors.mealRelation?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Notes optional
-        <textarea rows={2} placeholder="Context around the reading" {...register('notes')} />
+        <textarea
+          className={ui.textarea}
+          rows={2}
+          placeholder="Context around the reading"
+          {...register('notes')}
+        />
         <FieldError message={errors.notes?.message} />
       </label>
 
-      <div className="form-actions">
+      <div className={ui.formActions}>
         {onCancel ? (
-          <button className="secondary-button" type="button" onClick={onCancel}>
+          <button className={ui.secondaryButton} type="button" onClick={onCancel}>
             Cancel
           </button>
         ) : null}
-        <button className="primary-button" type="submit" disabled={isSubmitting}>
+        <button className={ui.primaryButton} type="submit" disabled={isSubmitting}>
           Save reading
         </button>
       </div>

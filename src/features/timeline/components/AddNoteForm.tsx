@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 
 import { FieldError } from '../../../shared/components/FieldError';
 import { toDateTimeLocalValue } from '../../../shared/lib/date';
+import { ui } from '../../../shared/lib/uiStyles';
 import type { NoteEvent } from '../../../shared/types/domain';
 import { noteFormSchema, type NoteFormValues } from '../schemas/noteFormSchema';
 
@@ -28,26 +29,31 @@ export function AddNoteForm({ initialEvent, onSubmit, onCancel }: AddNoteFormPro
   });
 
   return (
-    <form className="stacked-form" onSubmit={handleSubmit(onSubmit)}>
-      <label>
+    <form className={ui.stackedForm} onSubmit={handleSubmit(onSubmit)}>
+      <label className={ui.label}>
         Time
-        <input type="datetime-local" {...register('timestampLocal')} />
+        <input className={ui.input} type="datetime-local" {...register('timestampLocal')} />
         <FieldError message={errors.timestampLocal?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Note
-        <textarea rows={4} placeholder="General health note" {...register('text')} />
+        <textarea
+          className={ui.textarea}
+          rows={4}
+          placeholder="General health note"
+          {...register('text')}
+        />
         <FieldError message={errors.text?.message} />
       </label>
 
-      <div className="form-actions">
+      <div className={ui.formActions}>
         {onCancel ? (
-          <button className="secondary-button" type="button" onClick={onCancel}>
+          <button className={ui.secondaryButton} type="button" onClick={onCancel}>
             Cancel
           </button>
         ) : null}
-        <button className="primary-button" type="submit" disabled={isSubmitting}>
+        <button className={ui.primaryButton} type="submit" disabled={isSubmitting}>
           Save note
         </button>
       </div>

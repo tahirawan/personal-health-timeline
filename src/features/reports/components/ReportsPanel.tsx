@@ -9,6 +9,7 @@ import {
   YAxis,
 } from 'recharts';
 
+import { ui } from '../../../shared/lib/uiStyles';
 import { displayNumber } from '../../../shared/lib/numbers';
 import type { TimelineEvent } from '../../../shared/types/domain';
 import {
@@ -32,6 +33,7 @@ import {
 
 type ReportsPanelProps = {
   events: TimelineEvent[];
+  onOpenBackup: () => void;
 };
 
 const periodOptions: Array<{ value: ReportPeriod; label: string }> = [
@@ -44,7 +46,7 @@ const periodOptions: Array<{ value: ReportPeriod; label: string }> = [
   { value: 'custom', label: 'Custom' },
 ];
 
-export function ReportsPanel({ events }: ReportsPanelProps) {
+export function ReportsPanel({ events, onOpenBackup }: ReportsPanelProps) {
   const [period, setPeriod] = useState<ReportPeriod>('7days');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -61,12 +63,15 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
   }, [endDate, events, period, startDate]);
 
   return (
-    <section className="section-block" aria-labelledby="reports-heading">
-      <div className="section-heading-row">
-        <h2 id="reports-heading">Reports</h2>
-        <label className="compact-field">
+    <section className={ui.section} aria-labelledby="reports-heading">
+      <div className={ui.sectionHeadingRow}>
+        <h2 className={ui.h2} id="reports-heading">
+          Reports
+        </h2>
+        <label className={ui.compactField}>
           Period
           <select
+            className={ui.input}
             aria-label="Report period"
             value={period}
             onChange={(event) => setPeriod(event.target.value as ReportPeriod)}
@@ -81,18 +86,20 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
       </div>
 
       {period === 'custom' ? (
-        <div className="form-grid two-column">
-          <label>
+        <div className={ui.formGridTwoColumn}>
+          <label className={ui.label}>
             Start date
             <input
+              className={ui.input}
               type="date"
               value={startDate}
               onChange={(event) => setStartDate(event.target.value)}
             />
           </label>
-          <label>
+          <label className={ui.label}>
             End date
             <input
+              className={ui.input}
               type="date"
               value={endDate}
               onChange={(event) => setEndDate(event.target.value)}
@@ -101,7 +108,7 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
         </div>
       ) : null}
 
-      <div className="stats-grid" aria-label="Blood pressure summary">
+      <div className={ui.statsGrid} aria-label="Blood pressure summary">
         <MetricCard label="Avg systolic" value={displayNumber(report.summary.averageSystolic)} />
         <MetricCard label="Avg diastolic" value={displayNumber(report.summary.averageDiastolic)} />
         <MetricCard label="Avg pulse" value={displayNumber(report.summary.averagePulse)} />
@@ -122,7 +129,7 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
       </div>
 
       <div
-        className="chart-panel"
+        className={ui.chartPanel}
         aria-label="Blood pressure trend chart"
         data-testid="report-chart"
       >
@@ -180,15 +187,27 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="empty-state">No blood pressure readings in this period.</p>
+          <p className={ui.chartEmptyState}>No blood pressure readings in this period.</p>
         )}
       </div>
 
-      <div className="stats-grid compact" aria-label="Timeline counts">
+      <div className={ui.statsGridCompact} aria-label="Timeline counts">
         <MetricCard label="Readings logged" value={String(report.counts.readings)} />
         <MetricCard label="Meals logged" value={String(report.counts.meals)} />
         <MetricCard label="Tablets logged" value={String(report.counts.tablets)} />
         <MetricCard label="Notes logged" value={String(report.counts.notes)} />
+      </div>
+
+      <div className={ui.linkPanel}>
+        <div>
+          <h3 className={ui.linkPanelTitle}>Export, import, and backup</h3>
+          <p className={ui.linkPanelText}>
+            Open the backup page to export JSON/CSV files or restore data from a backup.
+          </p>
+        </div>
+        <button className={ui.secondaryButton} type="button" onClick={onOpenBackup}>
+          Open backup page
+        </button>
       </div>
     </section>
   );
@@ -196,9 +215,9 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <div className={ui.metricCard}>
+      <span className={ui.metricLabel}>{label}</span>
+      <strong className={ui.metricValue}>{value}</strong>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { TimelineRepository } from '../shared/storage/timelineRepository';
 import type { TimelineEvent } from '../shared/types/domain';
@@ -43,7 +43,6 @@ function createMemoryRepository(initialEvents: TimelineEvent[] = []): TimelineRe
 
 describe('App smoke flow', () => {
   it('adds a BP reading, shows it in today timeline, and includes it in reports', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const user = userEvent.setup();
 
     render(<App repository={createMemoryRepository()} />);

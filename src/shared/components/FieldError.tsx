@@ -1,3 +1,5 @@
+import { ui } from '../lib/uiStyles';
+
 type FieldErrorProps = {
   message?: string;
 };
@@ -7,5 +9,5 @@ export function FieldError({ message }: FieldErrorProps) {
     return null;
   }
 
-  return <p className="field-error">{message}</p>;
+  return <p className={ui.fieldError}>{message}</p>;
 }

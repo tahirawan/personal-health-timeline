@@ -1,6 +1,8 @@
 import { Activity, Pill, StickyNote, Trash2, Utensils, Pencil } from 'lucide-react';
 
 import { formatDisplayTime } from '../../../shared/lib/date';
+import { cn } from '../../../shared/lib/classNames';
+import { timelineIconClasses, ui } from '../../../shared/lib/uiStyles';
 import type {
   BloodPressureEvent,
   MealEvent,
@@ -40,21 +42,25 @@ export function TimelineList({
 }: TimelineListProps) {
   if (events.length === 0) {
     return (
-      <section className="section-block" aria-labelledby="timeline-heading">
-        <h2 id="timeline-heading">{title}</h2>
-        <p className="empty-state">{emptyMessage}</p>
+      <section className={ui.section} aria-labelledby="timeline-heading">
+        <h2 className={ui.h2} id="timeline-heading">
+          {title}
+        </h2>
+        <p className={ui.emptyState}>{emptyMessage}</p>
       </section>
     );
   }
 
   return (
-    <section className="section-block" aria-labelledby="timeline-heading">
-      <h2 id="timeline-heading">{title}</h2>
-      <div className="timeline-groups">
+    <section className={ui.section} aria-labelledby="timeline-heading">
+      <h2 className={ui.h2} id="timeline-heading">
+        {title}
+      </h2>
+      <div className={ui.timelineGroups}>
         {groupEventsByLocalDate(events).map((group) => (
-          <div className="timeline-group" key={group.dateKey}>
-            <h3>{group.displayDate}</h3>
-            <ol className="timeline-list">
+          <div key={group.dateKey}>
+            <h3 className={cn(ui.h3, ui.timelineGroupTitle)}>{group.displayDate}</h3>
+            <ol className={ui.timelineList}>
               {group.events.map((event) => (
                 <TimelineItem event={event} key={event.id} onEdit={onEdit} onDelete={onDelete} />
               ))}
@@ -76,16 +82,16 @@ function TimelineItem({
   onDelete?: (event: TimelineEvent) => void;
 }) {
   return (
-    <li className={`timeline-item timeline-item-${event.type}`}>
-      <div className="timeline-time">{formatDisplayTime(event.timestamp)}</div>
-      <div className="timeline-icon" aria-hidden="true">
+    <li className={ui.timelineItem}>
+      <div className={ui.timelineTime}>{formatDisplayTime(event.timestamp)}</div>
+      <div className={cn(ui.timelineIcon, timelineIconClasses[event.type])} aria-hidden="true">
         {getEventIcon(event)}
       </div>
-      <div className="timeline-content">{getEventContent(event)}</div>
-      <div className="timeline-actions">
+      <div className={ui.timelineContent}>{getEventContent(event)}</div>
+      <div className={ui.timelineActions}>
         {onEdit ? (
           <button
-            className="icon-button"
+            className={ui.iconButton}
             type="button"
             onClick={() => onEdit(event)}
             aria-label={`Edit ${getEventLabel(event)}`}
@@ -96,7 +102,7 @@ function TimelineItem({
         ) : null}
         {onDelete ? (
           <button
-            className="icon-button danger"
+            className={cn(ui.iconButton, ui.dangerIconButton)}
             type="button"
             onClick={() => onDelete(event)}
             aria-label={`Delete ${getEventLabel(event)}`}
@@ -161,12 +167,14 @@ function getEventContent(event: TimelineEvent) {
 function BloodPressureContent({ event }: { event: BloodPressureEvent }) {
   return (
     <>
-      <strong>BP {`${event.systolic}/${event.diastolic}`}</strong>
-      <span>
+      <strong className={ui.timelineContentStrong}>
+        BP {`${event.systolic}/${event.diastolic}`}
+      </strong>
+      <span className={ui.timelineContentText}>
         {event.pulse ? `Pulse ${event.pulse}` : null}
         {event.mealRelation ? ` ${mealRelationLabels[event.mealRelation]}` : null}
       </span>
-      {event.notes ? <small>{event.notes}</small> : null}
+      {event.notes ? <small className={ui.timelineMutedText}>{event.notes}</small> : null}
     </>
   );
 }
@@ -174,8 +182,12 @@ function BloodPressureContent({ event }: { event: BloodPressureEvent }) {
 function MealContent({ event }: { event: MealEvent }) {
   return (
     <>
-      <strong>{event.mealType[0]?.toUpperCase() + event.mealType.slice(1)}</strong>
-      {event.description ? <span>{event.description}</span> : null}
+      <strong className={ui.timelineContentStrong}>
+        {event.mealType[0]?.toUpperCase() + event.mealType.slice(1)}
+      </strong>
+      {event.description ? (
+        <span className={ui.timelineContentText}>{event.description}</span>
+      ) : null}
     </>
   );
 }
@@ -183,9 +195,9 @@ function MealContent({ event }: { event: MealEvent }) {
 function TabletContent({ event }: { event: TabletEvent }) {
   return (
     <>
-      <strong>{event.medicationName || 'Tablet'}</strong>
-      {event.dosage ? <span>{event.dosage}</span> : null}
-      {event.notes ? <small>{event.notes}</small> : null}
+      <strong className={ui.timelineContentStrong}>{event.medicationName || 'Tablet'}</strong>
+      {event.dosage ? <span className={ui.timelineContentText}>{event.dosage}</span> : null}
+      {event.notes ? <small className={ui.timelineMutedText}>{event.notes}</small> : null}
     </>
   );
 }
@@ -193,8 +205,8 @@ function TabletContent({ event }: { event: TabletEvent }) {
 function NoteContent({ event }: { event: NoteEvent }) {
   return (
     <>
-      <strong>Note</strong>
-      <span>{event.text}</span>
+      <strong className={ui.timelineContentStrong}>Note</strong>
+      <span className={ui.timelineContentText}>{event.text}</span>
     </>
   );
 }

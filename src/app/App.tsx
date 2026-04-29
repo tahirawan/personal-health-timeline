@@ -36,10 +36,20 @@ import {
   sortTimelineEvents,
 } from '../features/timeline/services/timelineService';
 import { buildNoteEvent } from '../features/timeline/services/noteService';
+import { ConfirmDialog, type ConfirmDialogState } from '../shared/components/ConfirmDialog';
 import { Disclaimer } from '../shared/components/Disclaimer';
 import { Modal } from '../shared/components/Modal';
+import {
+  ToastViewport,
+  type ToastMessage,
+  type ToastPosition,
+  type ToastTone,
+} from '../shared/components/Toast';
+import { cn } from '../shared/lib/classNames';
 import { toLocalDateKey } from '../shared/lib/date';
+import { createId } from '../shared/lib/ids';
 import { displayNumber } from '../shared/lib/numbers';
+import { ui } from '../shared/lib/uiStyles';
 import { requestPersistentStorage } from '../shared/storage/db';
 import { timelineRepository, type TimelineRepository } from '../shared/storage/timelineRepository';
 import type {
@@ -55,7 +65,7 @@ type AppProps = {
   repository?: TimelineRepository;
 };
 
-type ViewName = 'home' | 'timeline' | 'reports' | 'settings';
+type ViewName = 'home' | 'timeline' | 'reports' | 'backup' | 'settings';
 type FormName = 'bloodPressure' | 'meal' | 'tablet' | 'note';
 
 const viewItems: Array<{ id: ViewName; label: string; icon: typeof Home }> = [
@@ -65,24 +75,52 @@ const viewItems: Array<{ id: ViewName; label: string; icon: typeof Home }> = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
+const toastPosition: ToastPosition = 'top-right';
+
 export function App({ repository = timelineRepository }: AppProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [view, setView] = useState<ViewName>('home');
   const [activeForm, setActiveForm] = useState<FormName | undefined>();
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | undefined>();
   const [persistentStorageGranted, setPersistentStorageGranted] = useState<boolean | undefined>();
-  const [status, setStatus] = useState('');
-  const [loadError, setLoadError] = useState('');
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | undefined>();
+  const [confirmResolver, setConfirmResolver] = useState<((value: boolean) => void) | undefined>();
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((currentToasts) => currentToasts.filter((toast) => toast.id !== id));
+  }, []);
+
+  const showToast = useCallback(
+    (tone: ToastTone, title: string, description?: string) => {
+      const id = createId();
+      setToasts((currentToasts) => [...currentToasts, { id, tone, title, description }]);
+      window.setTimeout(() => dismissToast(id), 4200);
+    },
+    [dismissToast],
+  );
+
+  const requestConfirmation = useCallback((state: ConfirmDialogState): Promise<boolean> => {
+    setConfirmDialog(state);
+    return new Promise((resolve) => {
+      setConfirmResolver(() => resolve);
+    });
+  }, []);
+
+  const closeConfirmation = (confirmed: boolean) => {
+    confirmResolver?.(confirmed);
+    setConfirmResolver(undefined);
+    setConfirmDialog(undefined);
+  };
 
   const loadEvents = useCallback(async () => {
     try {
       const storedEvents = await repository.listEvents();
       setEvents(sortTimelineEvents(storedEvents, 'desc'));
-      setLoadError('');
     } catch {
-      setLoadError('Could not load local timeline data.');
+      showToast('error', 'Could not load local timeline data.');
     }
-  }, [repository]);
+  }, [repository, showToast]);
 
   useEffect(() => {
     void loadEvents();
@@ -111,7 +149,7 @@ export function App({ repository = timelineRepository }: AppProps) {
 
   const refreshAfterSave = async (message: string) => {
     await loadEvents();
-    setStatus(message);
+    showToast('success', message);
     closeForm();
   };
 
@@ -149,20 +187,42 @@ export function App({ repository = timelineRepository }: AppProps) {
   };
 
   const handleDelete = async (event: TimelineEvent) => {
-    if (!window.confirm('Delete this timeline event?')) {
+    const confirmed = await requestConfirmation({
+      title: 'Delete timeline event?',
+      description: 'This removes the event from this device. Export a backup first if you need it.',
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+
+    if (!confirmed) {
       return;
     }
 
     await repository.deleteEvent(event.id);
     await loadEvents();
-    setStatus('Timeline event deleted.');
+    showToast('success', 'Timeline event deleted.');
   };
 
-  const handleImportEvents = async (incomingEvents: TimelineEvent[], mode: ImportMode) => {
+  const handleImportEvents = async (
+    incomingEvents: TimelineEvent[],
+    mode: ImportMode,
+  ): Promise<boolean> => {
     if (mode === 'replace') {
+      const confirmed = await requestConfirmation({
+        title: 'Replace all local data?',
+        description:
+          'This will remove the timeline currently stored on this device and replace it with the selected backup.',
+        confirmLabel: 'Replace data',
+        destructive: true,
+      });
+
+      if (!confirmed) {
+        return false;
+      }
+
       await repository.replaceAll(incomingEvents);
       await refreshAfterImport(`Replaced local data with ${incomingEvents.length} events.`);
-      return;
+      return true;
     }
 
     const mergeableEvents = getMergeableEvents(events, incomingEvents);
@@ -174,39 +234,42 @@ export function App({ repository = timelineRepository }: AppProps) {
         incomingEvents.length - mergeableEvents.length
       } duplicate events.`,
     );
+    return true;
   };
 
   const refreshAfterImport = async (message: string) => {
     await loadEvents();
-    setStatus(message);
+    showToast('success', message);
   };
 
+  const activeNavView = view === 'backup' ? 'reports' : view;
+
   return (
-    <>
-      <div className="backdrop" aria-hidden="true" />
-      <div className="app-shell">
-        <header className="app-header panel hero">
-          <div className="hero-copy">
-            <p className="eyebrow">Local-first health log</p>
-            <h1>Health Timeline</h1>
-            <p className="hero-text">
+    <div className={ui.page}>
+      <div className={ui.backdrop} aria-hidden="true" />
+      <div className={ui.appShell}>
+        <header className={ui.hero}>
+          <div className={ui.heroCopy}>
+            <p className={ui.eyebrow}>Local-first health log</p>
+            <h1 className={ui.h1}>Health Timeline</h1>
+            <p className={ui.heroText}>
               Blood pressure, meals, tablets, and notes stay on this device.
             </p>
           </div>
 
-          <aside className="hero-side">
-            <nav className="app-nav view-switch hero-switch" aria-label="Primary navigation">
+          <aside className={ui.heroSide}>
+            <nav className={ui.nav} aria-label="Primary navigation">
               {viewItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.id}
                     type="button"
-                    className={view === item.id ? 'nav-button active' : 'nav-button'}
+                    className={cn(ui.navButton, activeNavView === item.id && ui.navButtonActive)}
                     onClick={() => setView(item.id)}
                   >
-                    <Icon size={18} />
-                    <span>{item.label}</span>
+                    <Icon className={ui.navButtonIcon} size={18} />
+                    <span className={ui.navButtonLabel}>{item.label}</span>
                   </button>
                 );
               })}
@@ -214,9 +277,7 @@ export function App({ repository = timelineRepository }: AppProps) {
           </aside>
         </header>
 
-        <main className="views">
-          {loadError ? <p className="field-error">{loadError}</p> : null}
-          {status ? <p className="success-note">{status}</p> : null}
+        <main className={ui.views}>
           {view === 'home' ? (
             <HomeView
               todayEvents={todayEvents}
@@ -236,12 +297,22 @@ export function App({ repository = timelineRepository }: AppProps) {
               onDelete={handleDelete}
             />
           ) : null}
-          {view === 'reports' ? <ReportsPanel events={events} /> : null}
           {view === 'reports' ? (
-            <BackupPanel events={events} onImportEvents={handleImportEvents} />
+            <ReportsPanel events={events} onOpenBackup={() => setView('backup')} />
+          ) : null}
+          {view === 'backup' ? (
+            <BackupPanel
+              events={events}
+              onBackToReports={() => setView('reports')}
+              onImportEvents={handleImportEvents}
+              onNotify={showToast}
+            />
           ) : null}
           {view === 'settings' ? (
-            <SettingsPanel persistentStorageGranted={persistentStorageGranted} />
+            <SettingsPanel
+              persistentStorageGranted={persistentStorageGranted}
+              onOpenBackup={() => setView('backup')}
+            />
           ) : null}
         </main>
 
@@ -259,8 +330,16 @@ export function App({ repository = timelineRepository }: AppProps) {
             })}
           </Modal>
         ) : null}
+        {confirmDialog ? (
+          <ConfirmDialog
+            {...confirmDialog}
+            onCancel={() => closeConfirmation(false)}
+            onConfirm={() => closeConfirmation(true)}
+          />
+        ) : null}
+        <ToastViewport messages={toasts} position={toastPosition} onDismiss={dismissToast} />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -281,42 +360,54 @@ function HomeView({
 }) {
   return (
     <>
-      <section className="section-block" aria-labelledby="quick-add-heading">
-        <h2 id="quick-add-heading">Quick add</h2>
-        <div className="quick-actions">
-          <button className="primary-button" type="button" onClick={() => onAdd('bloodPressure')}>
-            <Activity size={20} />
+      <section className={ui.section} aria-labelledby="quick-add-heading">
+        <h2 className={ui.h2} id="quick-add-heading">
+          Quick add
+        </h2>
+        <div className={ui.quickActions}>
+          <button
+            className={ui.quickPrimaryButton}
+            type="button"
+            onClick={() => onAdd('bloodPressure')}
+          >
+            <Activity className={ui.quickIcon} size={20} />
             Add BP Reading
           </button>
-          <button className="secondary-button" type="button" onClick={() => onAdd('meal')}>
-            <Utensils size={20} />
+          <button className={ui.quickSecondaryButton} type="button" onClick={() => onAdd('meal')}>
+            <Utensils className={ui.quickIcon} size={20} />
             Add Meal
           </button>
-          <button className="secondary-button" type="button" onClick={() => onAdd('tablet')}>
-            <Pill size={20} />
+          <button className={ui.quickSecondaryButton} type="button" onClick={() => onAdd('tablet')}>
+            <Pill className={ui.quickIcon} size={20} />
             Add Tablet
           </button>
-          <button className="secondary-button" type="button" onClick={() => onAdd('note')}>
-            <StickyNote size={20} />
+          <button className={ui.quickSecondaryButton} type="button" onClick={() => onAdd('note')}>
+            <StickyNote className={ui.quickIcon} size={20} />
             Add Note
           </button>
         </div>
       </section>
 
-      <section className="section-block" aria-labelledby="today-summary-heading">
-        <h2 id="today-summary-heading">Today summary</h2>
-        <div className="stats-grid compact">
-          <div className="metric-card">
-            <span>Avg systolic</span>
-            <strong>{displayNumber(todaySummary.averageSystolic)}</strong>
+      <section className={ui.section} aria-labelledby="today-summary-heading">
+        <h2 className={ui.h2} id="today-summary-heading">
+          Today summary
+        </h2>
+        <div className={ui.statsGridCompact}>
+          <div className={ui.metricCard}>
+            <span className={ui.metricLabel}>Avg systolic</span>
+            <strong className={ui.metricValue}>
+              {displayNumber(todaySummary.averageSystolic)}
+            </strong>
           </div>
-          <div className="metric-card">
-            <span>Avg diastolic</span>
-            <strong>{displayNumber(todaySummary.averageDiastolic)}</strong>
+          <div className={ui.metricCard}>
+            <span className={ui.metricLabel}>Avg diastolic</span>
+            <strong className={ui.metricValue}>
+              {displayNumber(todaySummary.averageDiastolic)}
+            </strong>
           </div>
-          <div className="metric-card">
-            <span>Avg pulse</span>
-            <strong>{displayNumber(todaySummary.averagePulse)}</strong>
+          <div className={ui.metricCard}>
+            <span className={ui.metricLabel}>Avg pulse</span>
+            <strong className={ui.metricValue}>{displayNumber(todaySummary.averagePulse)}</strong>
           </div>
         </div>
       </section>
@@ -338,9 +429,11 @@ function RecentTrendChart({ readings }: { readings: BloodPressureEvent[] }) {
   const chartPoints = createChartPoints(readings);
 
   return (
-    <section className="section-block" aria-labelledby="trend-heading">
-      <h2 id="trend-heading">Recent trend</h2>
-      <div className="chart-panel mini" data-testid="home-trend-chart">
+    <section className={ui.section} aria-labelledby="trend-heading">
+      <h2 className={ui.h2} id="trend-heading">
+        Recent trend
+      </h2>
+      <div className={cn(ui.chartPanel, ui.miniChartPanel)} data-testid="home-trend-chart">
         {chartPoints.length > 0 ? (
           <ResponsiveContainer width="100%" height={190}>
             <LineChart data={chartPoints} margin={{ top: 8, right: 12, left: -16, bottom: 2 }}>
@@ -391,7 +484,7 @@ function RecentTrendChart({ readings }: { readings: BloodPressureEvent[] }) {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="empty-state">Add a BP reading to see the trend.</p>
+          <p className={ui.chartEmptyState}>Add a BP reading to see the trend.</p>
         )}
       </div>
     </section>

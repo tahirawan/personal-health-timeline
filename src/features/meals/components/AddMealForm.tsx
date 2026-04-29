@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 
 import { FieldError } from '../../../shared/components/FieldError';
 import { toDateTimeLocalValue } from '../../../shared/lib/date';
+import { ui } from '../../../shared/lib/uiStyles';
 import type { MealEvent } from '../../../shared/types/domain';
 import { mealFormSchema, type MealFormInput, type MealFormValues } from '../schemas/mealFormSchema';
 
@@ -29,16 +30,16 @@ export function AddMealForm({ initialEvent, onSubmit, onCancel }: AddMealFormPro
   });
 
   return (
-    <form className="stacked-form" onSubmit={handleSubmit(onSubmit)}>
-      <label>
+    <form className={ui.stackedForm} onSubmit={handleSubmit(onSubmit)}>
+      <label className={ui.label}>
         Time
-        <input type="datetime-local" {...register('timestampLocal')} />
+        <input className={ui.input} type="datetime-local" {...register('timestampLocal')} />
         <FieldError message={errors.timestampLocal?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Meal type
-        <select {...register('mealType')}>
+        <select className={ui.input} {...register('mealType')}>
           <option value="breakfast">Breakfast</option>
           <option value="lunch">Lunch</option>
           <option value="dinner">Dinner</option>
@@ -48,19 +49,24 @@ export function AddMealForm({ initialEvent, onSubmit, onCancel }: AddMealFormPro
         <FieldError message={errors.mealType?.message} />
       </label>
 
-      <label>
+      <label className={ui.label}>
         Food notes optional
-        <textarea rows={3} placeholder="Egg with avocado sandwich" {...register('description')} />
+        <textarea
+          className={ui.textarea}
+          rows={3}
+          placeholder="Egg with avocado sandwich"
+          {...register('description')}
+        />
         <FieldError message={errors.description?.message} />
       </label>
 
-      <div className="form-actions">
+      <div className={ui.formActions}>
         {onCancel ? (
-          <button className="secondary-button" type="button" onClick={onCancel}>
+          <button className={ui.secondaryButton} type="button" onClick={onCancel}>
             Cancel
           </button>
         ) : null}
-        <button className="primary-button" type="submit" disabled={isSubmitting}>
+        <button className={ui.primaryButton} type="submit" disabled={isSubmitting}>
           Save meal
         </button>
       </div>

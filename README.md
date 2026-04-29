@@ -85,7 +85,7 @@ MVP features:
 - Edit/delete events
 - Reports and charts
 - JSON backup export
-- JSON backup import
+- JSON backup file/paste import
 - CSV export for BP readings
 - Smart text import from manual logs
 - Offline support
@@ -126,6 +126,7 @@ Meals and tablets are shown in timeline context.
 - PWA support via vite-plugin-pwa or equivalent
 
 Styling is Tailwind CSS v4 through the official Vite plugin. The current UI keeps semantic component class names, with the visual system defined in Tailwind layers in `src/app/App.css`.
+`src/app/App.css` is intentionally limited to the Tailwind import and theme tokens. App styling is applied with Tailwind utility classes in React, centralized in `src/shared/lib/uiStyles.ts` where repeated utility groups are needed.
 
 ---
 
@@ -186,11 +187,11 @@ Because browser/PWA data can still be lost if app/browser data is cleared or the
 The app should support:
 
 - JSON export of all timeline data
-- JSON import/restore with merge by default and explicit confirmation before replacement
+- JSON file or pasted JSON import/restore with merge by default and explicit confirmation before replacement
 - CSV export of BP readings
 - smart text import for manual logs such as `09:28 - 120/75 - 74 - After Breakfast`
 
-Backup and import controls live on the Reports page so reporting and data export stay together.
+Backup and import controls live on a dedicated Backup & import page. Reports and Settings link to that page, while the Reports screen keeps only a compact export/import link.
 
 Users should regularly export backups if they rely on the app for long-term history.
 

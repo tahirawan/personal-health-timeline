@@ -36,6 +36,8 @@ Should not:
 - parse backup files directly
 - contain complex business rules
 
+Styling should use Tailwind utility classes. Shared/repeated utility groups can live in `src/shared/lib/uiStyles.ts`. `src/app/App.css` should stay limited to Tailwind setup and theme tokens, not component selector classes.
+
 ---
 
 ### Feature Layer
@@ -110,7 +112,7 @@ IndexedDB -> repository -> export service -> JSON/CSV file
 Backup import:
 
 ```text
-File -> parse -> Zod validation -> preview -> confirmed save -> repository
+File or pasted JSON -> parse -> Zod validation -> preview -> confirmed save -> repository
 ```
 
 ---
@@ -132,6 +134,8 @@ Avoid global state libraries unless clearly needed.
 ## Error Handling
 
 User-facing errors should be clear and non-technical.
+
+Use in-app confirm dialogs for destructive choices and auto-dismissing toast notifications for success/error feedback. Do not rely on browser-native alert or confirm dialogs for core flows.
 
 Examples:
 
