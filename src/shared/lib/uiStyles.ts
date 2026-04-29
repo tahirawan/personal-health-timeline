@@ -44,7 +44,7 @@ export const ui = {
   ),
   heroCopy: 'min-w-0',
   eyebrow: 'mt-0 mb-2.5 text-[0.78rem] font-bold tracking-[0.18em] text-health-accent uppercase',
-  h1: 'm-0 font-display text-[clamp(2.2rem,6vw,4rem)] leading-[0.92] tracking-[0.02em]',
+  h1: 'm-0 font-display text-[clamp(2.2rem,6vw,4rem)] leading-[0.92] tracking-[0.02em] font-bold',
   h2: 'mt-0 mb-[18px] text-[1.15rem] font-bold',
   h3: 'mt-0 mb-3.5 text-base font-bold',
   heroText:
@@ -102,7 +102,7 @@ export const ui = {
   sectionDescription: 'mb-0 text-sm leading-6 text-health-muted',
   fieldHelp: 'mb-0 text-sm leading-6 text-health-muted',
   compactField: 'grid min-w-[170px] gap-2.5 font-extrabold text-health-ink',
-  label: 'grid gap-2.5 font-extrabold text-health-ink',
+  label: 'mt-4 grid gap-2.5 font-extrabold text-health-ink',
   input: cn(
     'min-h-[58px] w-full rounded-[14px] border border-[rgb(33_26_51_/_12%)] bg-white/90 px-4 text-health-ink',
     'shadow-[inset_0_1px_0_rgb(255_255_255_/_72%)]',
@@ -121,14 +121,14 @@ export const ui = {
   stackedForm: 'grid gap-[18px]',
   formGrid: 'grid gap-3.5',
   formGridTwoColumn: 'grid grid-cols-2 gap-3.5 max-[680px]:grid-cols-1',
-  formActions: 'flex flex-wrap justify-end gap-2.5',
+  formActions: 'flex flex-wrap justify-end gap-2.5 mt-4',
   checkboxRow: cn(
-    'grid grid-cols-[auto_1fr] items-start gap-3.5 rounded-[20px] border border-[rgb(19_139_131_/_16%)] px-[18px] py-4 font-extrabold',
+    'mt-4 grid grid-cols-[auto_1fr] items-start gap-3.5 rounded-[20px] border border-[rgb(19_139_131_/_16%)] px-[18px] py-4 font-extrabold',
     tintedGlassBackground,
   ),
   checkboxInput: 'mt-0.5 min-h-[22px] w-[22px] accent-health-teal',
   fieldError: 'm-0 font-extrabold text-health-danger',
-  previewNote: 'rounded-[20px] bg-[rgb(255_242_232_/_88%)] px-[18px] py-4 text-health-muted',
+  previewNote: 'mt-4 rounded-[20px] bg-[rgb(255_242_232_/_88%)] px-[18px] py-4 text-health-muted',
   emptyState: 'mb-0 text-health-muted',
   disclaimer:
     'mt-1.5 mb-0 rounded-[20px] border border-white/20 bg-[rgb(6_21_28_/_30%)] px-[18px] py-4 font-extrabold text-white/80 backdrop-blur-[14px]',
@@ -170,7 +170,9 @@ export const ui = {
   timelineContentText: 'max-[420px]:text-[0.94rem]',
   timelineContentStrong: 'break-words max-[420px]:text-[0.98rem]',
   timelineActions:
-    'flex flex-wrap justify-end gap-1.5 max-[680px]:col-span-full max-[680px]:justify-start max-[420px]:col-start-2 max-[420px]:col-end-4',
+    cn(
+      'flex flex-wrap justify-end gap-1.5 max-[680px]:col-span-full max-[680px]:justify-end max-[420px]:col-start-2 max-[420px]:col-end-4',
+    ),
   modalBackdrop: 'fixed inset-0 z-20 grid items-end bg-[rgb(6_21_28_/_62%)] p-[18px]',
   modalPanel: cn(
     'mx-auto max-h-[min(88vh,780px)] w-full max-w-[640px] overflow-auto rounded-[28px] border border-white/40 p-6 shadow-health-panel backdrop-blur-[18px] max-[680px]:rounded-[22px]',

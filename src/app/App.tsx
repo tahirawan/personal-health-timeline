@@ -250,7 +250,7 @@ export function App({ repository = timelineRepository }: AppProps) {
       <div className={ui.appShell}>
         <header className={ui.hero}>
           <div className={ui.heroCopy}>
-            <p className={ui.eyebrow}>Local-first health log</p>
+            <p className={ui.eyebrow}>Personal health log</p>
             <h1 className={ui.h1}>Health Timeline</h1>
             <p className={ui.heroText}>
               Blood pressure, meals, tablets, and notes stay on this device.
