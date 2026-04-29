@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const repositoryBase = process.env.GITHUB_PAGES === 'true' ? '/blood-pressure/' : '/';
+const repositoryBase = process.env.GITHUB_PAGES === 'true' ? '/personal-health-timeline/' : '/';
 
 export default defineConfig({
   base: repositoryBase,
