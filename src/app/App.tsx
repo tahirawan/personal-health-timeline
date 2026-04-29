@@ -358,6 +358,7 @@ function HomeView({
   onEdit: (event: TimelineEvent) => void;
   onDelete: (event: TimelineEvent) => void;
 }) {
+  const hasTodaySummary = todaySummary.averageSystolic || todaySummary.averageDiastolic || todaySummary.averagePulse;
   return (
     <>
       <section className={ui.section} aria-labelledby="quick-add-heading">
@@ -392,7 +393,8 @@ function HomeView({
         <h2 className={ui.h2} id="today-summary-heading">
           Today summary
         </h2>
-        <div className={ui.statsGridCompact}>
+        {
+        hasTodaySummary && <div className={ui.statsGridCompact}>
           <div className={ui.metricCard}>
             <span className={ui.metricLabel}>Avg systolic</span>
             <strong className={ui.metricValue}>
@@ -410,6 +412,8 @@ function HomeView({
             <strong className={ui.metricValue}>{displayNumber(todaySummary.averagePulse)}</strong>
           </div>
         </div>
+        }
+        {!hasTodaySummary && <p className={ui.emptyState}>No blood pressure readings logged today.</p>}
       </section>
 
       <RecentTrendChart readings={recentReadings} />
@@ -433,8 +437,9 @@ function RecentTrendChart({ readings }: { readings: BloodPressureEvent[] }) {
       <h2 className={ui.h2} id="trend-heading">
         Recent trend
       </h2>
+      {
+      chartPoints.length > 0 ? (
       <div className={cn(ui.chartPanel, ui.miniChartPanel)} data-testid="home-trend-chart">
-        {chartPoints.length > 0 ? (
           <ResponsiveContainer width="100%" height={190}>
             <LineChart data={chartPoints} margin={{ top: 8, right: 12, left: -16, bottom: 2 }}>
               <XAxis
@@ -483,10 +488,10 @@ function RecentTrendChart({ readings }: { readings: BloodPressureEvent[] }) {
               />
             </LineChart>
           </ResponsiveContainer>
-        ) : (
-          <p className={ui.chartEmptyState}>Add a BP reading to see the trend.</p>
-        )}
       </div>
+      ) : (
+        <p className={ui.emptyState}>No blood pressure readings in the last 7 days.</p>
+      )}
     </section>
   );
 }

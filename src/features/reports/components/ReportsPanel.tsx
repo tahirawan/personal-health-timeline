@@ -62,27 +62,34 @@ export function ReportsPanel({ events, onOpenBackup }: ReportsPanelProps) {
     };
   }, [endDate, events, period, startDate]);
 
+  const hasReportSummary =
+    report.summary.averageSystolic ||
+    report.summary.averageDiastolic ||
+    report.summary.averagePulse;
+
   return (
     <section className={ui.section} aria-labelledby="reports-heading">
       <div className={ui.sectionHeadingRow}>
         <h2 className={ui.h2} id="reports-heading">
           Reports
         </h2>
-        <label className={ui.compactField}>
-          Period
-          <select
-            className={ui.input}
-            aria-label="Report period"
-            value={period}
-            onChange={(event) => setPeriod(event.target.value as ReportPeriod)}
-          >
-            {periodOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        { hasReportSummary && (
+          <label className={ui.compactField}>
+            Period
+            <select
+              className={ui.input}
+              aria-label="Report period"
+              value={period}
+              onChange={(event) => setPeriod(event.target.value as ReportPeriod)}
+            >
+              {periodOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       {period === 'custom' ? (
@@ -109,31 +116,39 @@ export function ReportsPanel({ events, onOpenBackup }: ReportsPanelProps) {
       ) : null}
 
       <div className={ui.statsGrid} aria-label="Blood pressure summary">
-        <MetricCard label="Avg systolic" value={displayNumber(report.summary.averageSystolic)} />
-        <MetricCard label="Avg diastolic" value={displayNumber(report.summary.averageDiastolic)} />
-        <MetricCard label="Avg pulse" value={displayNumber(report.summary.averagePulse)} />
-        <MetricCard
-          label="Highest systolic"
-          value={displayNumber(report.summary.highestSystolic)}
-        />
-        <MetricCard
-          label="Highest diastolic"
-          value={displayNumber(report.summary.highestDiastolic)}
-        />
-        <MetricCard label="Lowest systolic" value={displayNumber(report.summary.lowestSystolic)} />
-        <MetricCard
-          label="Lowest diastolic"
-          value={displayNumber(report.summary.lowestDiastolic)}
-        />
-        <MetricCard label="Total readings" value={String(report.summary.totalReadings)} />
+        {
+        hasReportSummary ? (
+          <>
+            <MetricCard label="Avg systolic" value={displayNumber(report.summary.averageSystolic)} />
+            <MetricCard label="Avg diastolic" value={displayNumber(report.summary.averageDiastolic)} />
+            <MetricCard label="Avg pulse" value={displayNumber(report.summary.averagePulse)} />
+            <MetricCard
+              label="Highest systolic"
+              value={displayNumber(report.summary.highestSystolic)}
+            />
+            <MetricCard
+              label="Highest diastolic"
+              value={displayNumber(report.summary.highestDiastolic)}
+            />
+            <MetricCard label="Lowest systolic" value={displayNumber(report.summary.lowestSystolic)} />
+            <MetricCard
+              label="Lowest diastolic"
+              value={displayNumber(report.summary.lowestDiastolic)}
+            />
+            <MetricCard label="Total readings" value={String(report.summary.totalReadings)} />
+          </>
+        ) : (
+          <p className={ui.emptyState}>No blood pressure readings in this period.</p>
+        )}
       </div>
 
+      {
+      report.chartPoints.length > 0 && (
       <div
         className={ui.chartPanel}
         aria-label="Blood pressure trend chart"
         data-testid="report-chart"
       >
-        {report.chartPoints.length > 0 ? (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart
               data={report.chartPoints}
@@ -186,17 +201,17 @@ export function ReportsPanel({ events, onOpenBackup }: ReportsPanelProps) {
               />
             </LineChart>
           </ResponsiveContainer>
-        ) : (
-          <p className={ui.chartEmptyState}>No blood pressure readings in this period.</p>
-        )}
       </div>
+      )}
 
+      { hasReportSummary && (
       <div className={ui.statsGridCompact} aria-label="Timeline counts">
         <MetricCard label="Readings logged" value={String(report.counts.readings)} />
         <MetricCard label="Meals logged" value={String(report.counts.meals)} />
         <MetricCard label="Tablets logged" value={String(report.counts.tablets)} />
         <MetricCard label="Notes logged" value={String(report.counts.notes)} />
       </div>
+      )}
 
       <div className={ui.linkPanel}>
         <div>
