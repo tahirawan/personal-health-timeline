@@ -18,29 +18,6 @@ There is no backend, no login, no cloud sync, no admin view, and no remote datab
 
 ---
 
-## Reference App
-
-Reference hosted app:
-
-- https://lewisf2001uk.github.io/dlp-cost-estimator/
-
-Reference repository:
-
-- https://github.com/lewisf2001uk/dlp-cost-estimator
-
-Use this only as inspiration for:
-
-- simple GitHub Pages hosting
-- static app deployment
-- PWA-style installable web app
-- simple and focused UI
-- offline-friendly behaviour
-- lightweight repository structure
-
-Do not copy its business logic. This app is a new health timeline tracker.
-
----
-
 ## Real User Logging Pattern
 
 The user's current manual recording style is the source of truth for the MVP experience.
