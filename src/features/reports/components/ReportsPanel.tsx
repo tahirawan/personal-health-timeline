@@ -20,6 +20,15 @@ import {
   getReportDateRange,
   type ReportPeriod,
 } from '../services/reportService';
+import {
+  chartTooltipContentStyle,
+  chartTooltipCursor,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipWrapperStyle,
+  getChartMetricLabel,
+  sortChartTooltipItems,
+} from './chartTooltip';
 
 type ReportsPanelProps = {
   events: TimelineEvent[];
@@ -135,10 +144,19 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
                 tick={{ fill: '#ffffffcc' }}
                 stroke="#ffffff55"
               />
-              <Tooltip />
+              <Tooltip
+                contentStyle={chartTooltipContentStyle}
+                cursor={chartTooltipCursor}
+                formatter={(value, name) => [value, getChartMetricLabel(name)]}
+                itemSorter={sortChartTooltipItems}
+                itemStyle={chartTooltipItemStyle}
+                labelStyle={chartTooltipLabelStyle}
+                wrapperStyle={chartTooltipWrapperStyle}
+              />
               <Line
                 type="monotone"
                 dataKey="systolic"
+                name="Systolic"
                 stroke="#dc2626"
                 strokeWidth={3}
                 dot={false}
@@ -146,11 +164,19 @@ export function ReportsPanel({ events }: ReportsPanelProps) {
               <Line
                 type="monotone"
                 dataKey="diastolic"
+                name="Diastolic"
                 stroke="#2563eb"
                 strokeWidth={3}
                 dot={false}
               />
-              <Line type="monotone" dataKey="pulse" stroke="#7c3aed" strokeWidth={2} dot={false} />
+              <Line
+                type="monotone"
+                dataKey="pulse"
+                name="Pulse"
+                stroke="#7c3aed"
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         ) : (

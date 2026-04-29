@@ -114,6 +114,7 @@ Meals and tablets are shown in timeline context.
 - React
 - Vite
 - TypeScript
+- Tailwind CSS
 - IndexedDB with Dexie
 - Zod
 - React Hook Form
@@ -123,6 +124,8 @@ Meals and tablets are shown in timeline context.
 - ESLint
 - Prettier
 - PWA support via vite-plugin-pwa or equivalent
+
+Styling is Tailwind CSS v4 through the official Vite plugin. The current UI keeps semantic component class names, with the visual system defined in Tailwind layers in `src/app/App.css`.
 
 ---
 
@@ -186,6 +189,8 @@ The app should support:
 - JSON import/restore with merge by default and explicit confirmation before replacement
 - CSV export of BP readings
 - smart text import for manual logs such as `09:28 - 120/75 - 74 - After Breakfast`
+
+Backup and import controls live on the Reports page so reporting and data export stay together.
 
 Users should regularly export backups if they rely on the app for long-term history.
 

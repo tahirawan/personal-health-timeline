@@ -194,6 +194,7 @@ Allowed core dependencies:
 - Recharts
 - Vitest
 - React Testing Library
+- Tailwind CSS
 - ESLint
 - Prettier
 - vite-plugin-pwa or equivalent

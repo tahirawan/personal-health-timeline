@@ -118,6 +118,7 @@ Use the following stack unless an existing repository already has an approved al
 - React Hook Form
 - Zod
 - Recharts
+- Tailwind CSS
 - Vitest
 - React Testing Library
 - ESLint

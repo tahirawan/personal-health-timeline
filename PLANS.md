@@ -83,7 +83,7 @@ Add convenience and polish:
 - install prompt/help screen
 - backup reminders
 - dark mode if not already present
-- Tailwind CSS migration after the current plain-CSS visual system stabilises
+- gradual conversion from semantic Tailwind component classes to inline utility classes where it improves maintainability
 
 Smart text import and basic import preview are present. Phase 2 should focus on correction/editing of parsed imports, history suggestions, and polish.
 

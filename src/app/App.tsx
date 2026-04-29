@@ -1,13 +1,4 @@
-import {
-  Activity,
-  BarChart3,
-  Download,
-  Home,
-  Pill,
-  Settings,
-  StickyNote,
-  Utensils,
-} from 'lucide-react';
+import { Activity, BarChart3, Home, Pill, Settings, StickyNote, Utensils } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -19,6 +10,15 @@ import { buildBloodPressureEvent } from '../features/blood-pressure/services/blo
 import { AddMealForm } from '../features/meals/components/AddMealForm';
 import { buildMealEvent } from '../features/meals/services/mealService';
 import { ReportsPanel } from '../features/reports/components/ReportsPanel';
+import {
+  chartTooltipContentStyle,
+  chartTooltipCursor,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipWrapperStyle,
+  getChartMetricLabel,
+  sortChartTooltipItems,
+} from '../features/reports/components/chartTooltip';
 import {
   calculateBloodPressureSummary,
   createChartPoints,
@@ -55,14 +55,13 @@ type AppProps = {
   repository?: TimelineRepository;
 };
 
-type ViewName = 'home' | 'timeline' | 'reports' | 'backup' | 'settings';
+type ViewName = 'home' | 'timeline' | 'reports' | 'settings';
 type FormName = 'bloodPressure' | 'meal' | 'tablet' | 'note';
 
 const viewItems: Array<{ id: ViewName; label: string; icon: typeof Home }> = [
   { id: 'home', label: 'Today', icon: Home },
   { id: 'timeline', label: 'Timeline', icon: Activity },
   { id: 'reports', label: 'Reports', icon: BarChart3 },
-  { id: 'backup', label: 'Backup', icon: Download },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -238,7 +237,7 @@ export function App({ repository = timelineRepository }: AppProps) {
             />
           ) : null}
           {view === 'reports' ? <ReportsPanel events={events} /> : null}
-          {view === 'backup' ? (
+          {view === 'reports' ? (
             <BackupPanel events={events} onImportEvents={handleImportEvents} />
           ) : null}
           {view === 'settings' ? (
@@ -356,10 +355,19 @@ function RecentTrendChart({ readings }: { readings: BloodPressureEvent[] }) {
                 tick={{ fill: '#ffffffcc' }}
                 stroke="#ffffff55"
               />
-              <Tooltip />
+              <Tooltip
+                contentStyle={chartTooltipContentStyle}
+                cursor={chartTooltipCursor}
+                formatter={(value, name) => [value, getChartMetricLabel(name)]}
+                itemSorter={sortChartTooltipItems}
+                itemStyle={chartTooltipItemStyle}
+                labelStyle={chartTooltipLabelStyle}
+                wrapperStyle={chartTooltipWrapperStyle}
+              />
               <Line
                 type="monotone"
                 dataKey="systolic"
+                name="Systolic"
                 stroke="#dc2626"
                 strokeWidth={3}
                 dot={false}
@@ -367,11 +375,19 @@ function RecentTrendChart({ readings }: { readings: BloodPressureEvent[] }) {
               <Line
                 type="monotone"
                 dataKey="diastolic"
+                name="Diastolic"
                 stroke="#2563eb"
                 strokeWidth={3}
                 dot={false}
               />
-              <Line type="monotone" dataKey="pulse" stroke="#7c3aed" strokeWidth={2} dot={false} />
+              <Line
+                type="monotone"
+                dataKey="pulse"
+                name="Pulse"
+                stroke="#7c3aed"
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         ) : (
