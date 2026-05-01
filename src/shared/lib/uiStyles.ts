@@ -154,7 +154,12 @@ export const ui = {
   chartLegendItem: 'inline-flex items-center gap-2',
   chartScrollArea:
     'mt-2.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin] [scrollbar-color:rgb(255_255_255_/_34%)_transparent]',
-  chartCanvas: 'h-[260px] max-[680px]:pr-2',
+  chartTrack: 'flex min-w-full items-stretch',
+  chartStickyAxis:
+    'sticky left-0 z-10 w-11 shrink-0 bg-[linear-gradient(90deg,rgb(9_41_50_/_98%),rgb(9_41_50_/_90%)_72%,rgb(9_41_50_/_0%))] pr-2 text-right',
+  chartYAxisLabels:
+    'flex h-full flex-col justify-between pt-2 pb-11 text-[0.72rem] font-extrabold text-white/78',
+  chartCanvas: 'h-[260px] min-w-0 flex-1 max-[680px]:pr-2',
   miniChartCanvas: 'h-[190px]',
   chartEmptyState: 'mb-0 px-[18px] text-white/80',
   linkPanel: cn(
