@@ -169,10 +169,9 @@ export const ui = {
   timelineMutedText: 'text-health-muted max-[420px]:text-[0.94rem]',
   timelineContentText: 'max-[420px]:text-[0.94rem]',
   timelineContentStrong: 'break-words max-[420px]:text-[0.98rem]',
-  timelineActions:
-    cn(
-      'flex flex-wrap justify-end gap-1.5 max-[680px]:col-span-full max-[680px]:justify-end max-[420px]:col-start-2 max-[420px]:col-end-4',
-    ),
+  timelineActions: cn(
+    'flex flex-wrap justify-end gap-1.5 max-[680px]:col-span-full max-[680px]:justify-end max-[420px]:col-start-2 max-[420px]:col-end-4',
+  ),
   modalBackdrop: 'fixed inset-0 z-20 grid items-end bg-[rgb(6_21_28_/_62%)] p-[18px]',
   modalPanel: cn(
     'mx-auto max-h-[min(88vh,780px)] w-full max-w-[640px] overflow-auto rounded-[28px] border border-white/40 p-6 shadow-health-panel backdrop-blur-[18px] max-[680px]:rounded-[22px]',

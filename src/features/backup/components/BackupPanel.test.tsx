@@ -53,7 +53,9 @@ describe('BackupPanel', () => {
       new File([backup], 'health-timeline-backup.json', { type: 'application/json' }),
     );
 
-    expect(screen.getByText(/selected file: health-timeline-backup\.json/i)).toBeInTheDocument();
-    expect(screen.getByText(/preview: 1 events, 1 bp/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/selected file: health-timeline-backup\.json/i),
+    ).toBeInTheDocument();
+    expect(await screen.findByText(/preview: 1 events, 1 bp/i)).toBeInTheDocument();
   });
 });
