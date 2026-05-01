@@ -1,6 +1,5 @@
 import { Activity, BarChart3, Home, Pill, Settings, StickyNote, Utensils } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import './App.css';
 import { BackupPanel } from '../features/backup/components/BackupPanel';
@@ -9,16 +8,8 @@ import { AddBloodPressureForm } from '../features/blood-pressure/components/AddB
 import { buildBloodPressureEvent } from '../features/blood-pressure/services/bloodPressureService';
 import { AddMealForm } from '../features/meals/components/AddMealForm';
 import { buildMealEvent } from '../features/meals/services/mealService';
+import { BloodPressureLineChart } from '../features/reports/components/BloodPressureLineChart';
 import { ReportsPanel } from '../features/reports/components/ReportsPanel';
-import {
-  chartTooltipContentStyle,
-  chartTooltipCursor,
-  chartTooltipItemStyle,
-  chartTooltipLabelStyle,
-  chartTooltipWrapperStyle,
-  getChartMetricLabel,
-  sortChartTooltipItems,
-} from '../features/reports/components/chartTooltip';
 import {
   calculateBloodPressureSummary,
   createChartPoints,
@@ -441,56 +432,7 @@ function RecentTrendChart({ readings }: { readings: BloodPressureEvent[] }) {
         Recent trend
       </h2>
       {chartPoints.length > 0 ? (
-        <div className={cn(ui.chartPanel, ui.miniChartPanel)} data-testid="home-trend-chart">
-          <ResponsiveContainer width="100%" height={190}>
-            <LineChart data={chartPoints} margin={{ top: 8, right: 12, left: -16, bottom: 2 }}>
-              <XAxis
-                dataKey="label"
-                minTickGap={32}
-                tick={{ fill: '#ffffffcc' }}
-                stroke="#ffffff55"
-              />
-              <YAxis
-                domain={['dataMin - 10', 'dataMax + 10']}
-                tick={{ fill: '#ffffffcc' }}
-                stroke="#ffffff55"
-              />
-              <Tooltip
-                contentStyle={chartTooltipContentStyle}
-                cursor={chartTooltipCursor}
-                formatter={(value, name) => [value, getChartMetricLabel(name)]}
-                itemSorter={sortChartTooltipItems}
-                itemStyle={chartTooltipItemStyle}
-                labelStyle={chartTooltipLabelStyle}
-                wrapperStyle={chartTooltipWrapperStyle}
-              />
-              <Line
-                type="monotone"
-                dataKey="systolic"
-                name="Systolic"
-                stroke="#dc2626"
-                strokeWidth={3}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="diastolic"
-                name="Diastolic"
-                stroke="#2563eb"
-                strokeWidth={3}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="pulse"
-                name="Pulse"
-                stroke="#7c3aed"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <BloodPressureLineChart points={chartPoints} compact testId="home-trend-chart" />
       ) : (
         <p className={ui.emptyState}>No blood pressure readings in the last 7 days.</p>
       )}

@@ -1,13 +1,4 @@
 import { useMemo, useState } from 'react';
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 
 import { ui } from '../../../shared/lib/uiStyles';
 import { displayNumber } from '../../../shared/lib/numbers';
@@ -21,15 +12,7 @@ import {
   getReportDateRange,
   type ReportPeriod,
 } from '../services/reportService';
-import {
-  chartTooltipContentStyle,
-  chartTooltipCursor,
-  chartTooltipItemStyle,
-  chartTooltipLabelStyle,
-  chartTooltipWrapperStyle,
-  getChartMetricLabel,
-  sortChartTooltipItems,
-} from './chartTooltip';
+import { BloodPressureLineChart } from './BloodPressureLineChart';
 
 type ReportsPanelProps = {
   events: TimelineEvent[];
@@ -151,64 +134,7 @@ export function ReportsPanel({ events, onOpenBackup }: ReportsPanelProps) {
       </div>
 
       {report.chartPoints.length > 0 && (
-        <div
-          className={ui.chartPanel}
-          aria-label="Blood pressure trend chart"
-          data-testid="report-chart"
-        >
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart
-              data={report.chartPoints}
-              margin={{ top: 10, right: 12, left: -12, bottom: 8 }}
-            >
-              <CartesianGrid strokeDasharray="4 4" stroke="#ffffff26" />
-              <XAxis
-                dataKey="label"
-                minTickGap={28}
-                tick={{ fill: '#ffffffcc' }}
-                stroke="#ffffff55"
-              />
-              <YAxis
-                domain={['dataMin - 10', 'dataMax + 10']}
-                tick={{ fill: '#ffffffcc' }}
-                stroke="#ffffff55"
-              />
-              <Tooltip
-                contentStyle={chartTooltipContentStyle}
-                cursor={chartTooltipCursor}
-                formatter={(value, name) => [value, getChartMetricLabel(name)]}
-                itemSorter={sortChartTooltipItems}
-                itemStyle={chartTooltipItemStyle}
-                labelStyle={chartTooltipLabelStyle}
-                wrapperStyle={chartTooltipWrapperStyle}
-              />
-              <Line
-                type="monotone"
-                dataKey="systolic"
-                name="Systolic"
-                stroke="#dc2626"
-                strokeWidth={3}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="diastolic"
-                name="Diastolic"
-                stroke="#2563eb"
-                strokeWidth={3}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="pulse"
-                name="Pulse"
-                stroke="#7c3aed"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <BloodPressureLineChart points={report.chartPoints} testId="report-chart" />
       )}
 
       {hasReportSummary && (

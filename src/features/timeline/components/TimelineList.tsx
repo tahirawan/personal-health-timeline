@@ -81,37 +81,52 @@ function TimelineItem({
   onEdit?: (event: TimelineEvent) => void;
   onDelete?: (event: TimelineEvent) => void;
 }) {
+  const hasActions = Boolean(onEdit || onDelete);
+
   return (
-    <li className={ui.timelineItem}>
-      <div className={ui.timelineTime}>{formatDisplayTime(event.timestamp)}</div>
-      <div className={cn(ui.timelineIcon, timelineIconClasses[event.type])} aria-hidden="true">
+    <li className={cn(ui.timelineItem, hasActions && ui.timelineItemWithActions)}>
+      <div className={cn(ui.timelineTime, hasActions && ui.timelineTimeWithActions)}>
+        {formatDisplayTime(event.timestamp)}
+      </div>
+      <div
+        className={cn(
+          ui.timelineIcon,
+          timelineIconClasses[event.type],
+          hasActions && ui.timelineIconWithActions,
+        )}
+        aria-hidden="true"
+      >
         {getEventIcon(event)}
       </div>
-      <div className={ui.timelineContent}>{getEventContent(event)}</div>
-      <div className={ui.timelineActions}>
-        {onEdit ? (
-          <button
-            className={ui.iconButton}
-            type="button"
-            onClick={() => onEdit(event)}
-            aria-label={`Edit ${getEventLabel(event)}`}
-            title={`Edit ${getEventLabel(event)}`}
-          >
-            <Pencil size={18} />
-          </button>
-        ) : null}
-        {onDelete ? (
-          <button
-            className={cn(ui.iconButton, ui.dangerIconButton)}
-            type="button"
-            onClick={() => onDelete(event)}
-            aria-label={`Delete ${getEventLabel(event)}`}
-            title={`Delete ${getEventLabel(event)}`}
-          >
-            <Trash2 size={18} />
-          </button>
-        ) : null}
+      <div className={cn(ui.timelineContent, hasActions && ui.timelineContentWithActions)}>
+        {getEventContent(event)}
       </div>
+      {hasActions ? (
+        <div className={ui.timelineActions}>
+          {onEdit ? (
+            <button
+              className={ui.iconButton}
+              type="button"
+              onClick={() => onEdit(event)}
+              aria-label={`Edit ${getEventLabel(event)}`}
+              title={`Edit ${getEventLabel(event)}`}
+            >
+              <Pencil size={18} />
+            </button>
+          ) : null}
+          {onDelete ? (
+            <button
+              className={cn(ui.iconButton, ui.dangerIconButton)}
+              type="button"
+              onClick={() => onDelete(event)}
+              aria-label={`Delete ${getEventLabel(event)}`}
+              title={`Delete ${getEventLabel(event)}`}
+            >
+              <Trash2 size={18} />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </li>
   );
 }

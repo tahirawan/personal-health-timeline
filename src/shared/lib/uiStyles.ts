@@ -81,9 +81,10 @@ export const ui = {
   ),
   iconButton: cn(
     buttonBase,
-    'min-h-[42px] w-[42px] rounded-full border border-[rgb(19_139_131_/_12%)] bg-white/60 text-health-ink',
+    'min-h-[42px] w-[42px] rounded-full border border-[rgb(19_139_131_/_14%)] bg-white/78 text-health-ink shadow-[0_10px_22px_rgb(6_21_28_/_8%)] max-[680px]:min-h-9 max-[680px]:w-9',
   ),
-  dangerIconButton: 'bg-[rgb(255_226_207_/_78%)] text-health-danger',
+  dangerIconButton:
+    'border-[rgb(180_35_43_/_20%)] bg-[rgb(255_226_226_/_90%)] text-health-danger hover:bg-[rgb(255_214_214_/_96%)]',
   quickActions: 'grid grid-cols-2 gap-3.5 max-[680px]:grid-cols-1',
   actionGrid: 'grid grid-cols-2 gap-3.5 max-[680px]:grid-cols-1',
   quickPrimaryButton: cn(
@@ -144,10 +145,17 @@ export const ui = {
   metricValue:
     'break-words text-[clamp(1.35rem,4vw,2rem)] leading-none text-health-ink max-[680px]:text-[1.65rem]',
   chartPanel: cn(
-    'mt-[18px] min-h-[278px] w-full rounded-[20px] pt-4 pb-1 text-white',
+    'mt-[18px] min-h-[278px] w-full overflow-hidden rounded-[20px] px-4 pt-4 pb-2 text-white max-[680px]:px-3.5',
     'bg-[linear-gradient(135deg,rgb(9_41_50_/_96%),rgb(62_82_132_/_92%))]',
   ),
   miniChartPanel: 'min-h-52',
+  chartLegend:
+    'm-0 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-xs font-extrabold text-white/84',
+  chartLegendItem: 'inline-flex items-center gap-2',
+  chartScrollArea:
+    'mt-2.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin] [scrollbar-color:rgb(255_255_255_/_34%)_transparent]',
+  chartCanvas: 'h-[260px] max-[680px]:pr-2',
+  miniChartCanvas: 'h-[190px]',
   chartEmptyState: 'mb-0 px-[18px] text-white/80',
   linkPanel: cn(
     'mt-[18px] flex items-center justify-between gap-4 rounded-[20px] border border-[rgb(19_139_131_/_16%)] px-[18px] py-4 max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:rounded-2xl max-[680px]:px-3.5 max-[680px]:py-3',
@@ -162,15 +170,20 @@ export const ui = {
     'grid items-start gap-3 rounded-[20px] border border-[rgb(33_26_51_/_12%)] bg-white/70 px-[18px] py-4 shadow-[inset_0_1px_0_rgb(255_255_255_/_56%)]',
     '[grid-template-columns:4.4rem_2.6rem_minmax(0,1fr)_auto] max-[680px]:[grid-template-columns:3.8rem_2.35rem_minmax(0,1fr)] max-[420px]:[grid-template-columns:3.25rem_2.25rem_minmax(0,1fr)] max-[420px]:gap-2.5 max-[420px]:px-3.5 max-[420px]:py-3',
   ),
+  timelineItemWithActions:
+    'max-[680px]:[grid-template-columns:3.35rem_2.25rem_minmax(0,1fr)_2.5rem] max-[420px]:[grid-template-columns:3.05rem_2.15rem_minmax(0,1fr)_2.35rem]',
   timelineTime: 'font-black text-health-ink max-[420px]:text-[0.96rem]',
+  timelineTimeWithActions: 'max-[680px]:col-start-1 max-[680px]:row-start-1',
   timelineIcon:
     'grid h-[2.35rem] w-[2.35rem] place-items-center rounded-[10px] text-white max-[420px]:h-9 max-[420px]:w-9',
+  timelineIconWithActions: 'max-[680px]:col-start-2 max-[680px]:row-start-1',
   timelineContent: 'grid min-w-0 gap-1 break-words',
+  timelineContentWithActions: 'max-[680px]:col-start-3 max-[680px]:row-start-1',
   timelineMutedText: 'text-health-muted max-[420px]:text-[0.94rem]',
   timelineContentText: 'max-[420px]:text-[0.94rem]',
   timelineContentStrong: 'break-words max-[420px]:text-[0.98rem]',
   timelineActions: cn(
-    'flex flex-wrap justify-end gap-1.5 max-[680px]:col-span-full max-[680px]:justify-end max-[420px]:col-start-2 max-[420px]:col-end-4',
+    'flex flex-wrap justify-end gap-1.5 max-[680px]:col-start-4 max-[680px]:row-start-1 max-[680px]:row-span-2 max-[680px]:flex-col max-[680px]:items-end max-[680px]:justify-start max-[680px]:gap-2',
   ),
   modalBackdrop: 'fixed inset-0 z-20 grid items-end bg-[rgb(6_21_28_/_62%)] p-[18px]',
   modalPanel: cn(
