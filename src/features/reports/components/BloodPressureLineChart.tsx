@@ -155,9 +155,7 @@ type ChartScale = {
 
 function getChartScale(points: ChartPoint[]): ChartScale {
   const values = [
-    ...points.flatMap((point) =>
-      [point.systolic, point.diastolic, point.pulse].filter(isNumber),
-    ),
+    ...points.flatMap((point) => [point.systolic, point.diastolic, point.pulse].filter(isNumber)),
     // Always include reference line values so they're visible
     ...bpReferenceLines.map((r) => r.y),
   ];

@@ -12,10 +12,9 @@ export class HealthTimelineDatabase extends Dexie {
       timelineEvents: 'id, type, timestamp, createdAt',
     });
 
-    this.version(2)
-      .stores({
-        timelineEvents: 'id, type, timestamp, createdAt',
-      });
+    this.version(2).stores({
+      timelineEvents: 'id, type, timestamp, createdAt',
+    });
 
     // Version 3: removes any leftover flat fields from records that were
     // partially migrated in v2 (data added but old keys not deleted).

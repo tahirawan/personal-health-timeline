@@ -154,7 +154,10 @@ export function ReportsPanel({ events, onOpenBackup }: ReportsPanelProps) {
                   label="Avg diastolic"
                   value={displayNumber(report.bpSummary.averageDiastolic)}
                 />
-                <MetricCard label="Avg pulse" value={displayNumber(report.bpSummary.averagePulse)} />
+                <MetricCard
+                  label="Avg pulse"
+                  value={displayNumber(report.bpSummary.averagePulse)}
+                />
                 <MetricCard
                   label="Highest systolic"
                   value={displayNumber(report.bpSummary.highestSystolic)}

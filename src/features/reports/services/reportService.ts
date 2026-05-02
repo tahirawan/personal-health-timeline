@@ -6,7 +6,11 @@ import {
   startOfLocalDay,
 } from '../../../shared/lib/date';
 import { average, maxValue, minValue } from '../../../shared/lib/numbers';
-import type { BloodPressureEvent, BloodSugarEvent, TimelineEvent } from '../../../shared/types/domain';
+import type {
+  BloodPressureEvent,
+  BloodSugarEvent,
+  TimelineEvent,
+} from '../../../shared/types/domain';
 
 export const reportPeriods = [
   'today',
@@ -156,7 +160,9 @@ export function createBloodSugarChartPoints(events: BloodSugarEvent[]): BloodSug
 export function calculateBloodPressureSummary(events: BloodPressureEvent[]): BloodPressureSummary {
   const systolic = events.map((event) => event.data.systolic);
   const diastolic = events.map((event) => event.data.diastolic);
-  const pulse = events.flatMap((event) => (event.data.pulse === undefined ? [] : [event.data.pulse]));
+  const pulse = events.flatMap((event) =>
+    event.data.pulse === undefined ? [] : [event.data.pulse],
+  );
 
   return {
     averageSystolic: average(systolic),

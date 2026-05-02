@@ -1,4 +1,13 @@
-import { Activity, Droplets, LayoutGrid, Pill, StickyNote, Trash2, Utensils, Pencil } from 'lucide-react';
+import {
+  Activity,
+  Droplets,
+  LayoutGrid,
+  Pill,
+  StickyNote,
+  Trash2,
+  Utensils,
+  Pencil,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { formatDisplayTime } from '../../../shared/lib/date';
@@ -20,7 +29,8 @@ const filterOptions = [
     value: 'all' as const,
     label: 'All',
     icon: LayoutGrid,
-    activeCls: 'bg-health-teal border-health-teal text-white shadow-[0_4px_12px_rgb(19_139_131_/_32%)]',
+    activeCls:
+      'bg-health-teal border-health-teal text-white shadow-[0_4px_12px_rgb(19_139_131_/_32%)]',
     inactiveCls: 'border-[rgb(19_139_131_/_22%)] bg-[rgb(19_139_131_/_7%)] text-health-muted',
     iconActiveCls: 'text-white',
     iconInactiveCls: 'text-health-teal',
@@ -29,7 +39,8 @@ const filterOptions = [
     value: 'bloodPressure' as const,
     label: 'BP',
     icon: Activity,
-    activeCls: 'bg-health-teal border-health-teal text-white shadow-[0_4px_12px_rgb(19_139_131_/_32%)]',
+    activeCls:
+      'bg-health-teal border-health-teal text-white shadow-[0_4px_12px_rgb(19_139_131_/_32%)]',
     inactiveCls: 'border-[rgb(19_139_131_/_22%)] bg-[rgb(19_139_131_/_7%)] text-health-muted',
     iconActiveCls: 'text-white',
     iconInactiveCls: 'text-health-teal',
@@ -47,7 +58,8 @@ const filterOptions = [
     value: 'meal' as const,
     label: 'Meals',
     icon: Utensils,
-    activeCls: 'bg-health-accent border-health-accent text-white shadow-[0_4px_12px_rgb(211_111_60_/_30%)]',
+    activeCls:
+      'bg-health-accent border-health-accent text-white shadow-[0_4px_12px_rgb(211_111_60_/_30%)]',
     inactiveCls: 'border-[rgb(211_111_60_/_24%)] bg-[rgb(211_111_60_/_7%)] text-health-muted',
     iconActiveCls: 'text-white',
     iconInactiveCls: 'text-health-accent',
@@ -65,7 +77,8 @@ const filterOptions = [
     value: 'note' as const,
     label: 'Notes',
     icon: StickyNote,
-    activeCls: 'bg-health-violet border-health-violet text-white shadow-[0_4px_12px_rgb(101_87_189_/_30%)]',
+    activeCls:
+      'bg-health-violet border-health-violet text-white shadow-[0_4px_12px_rgb(101_87_189_/_30%)]',
     inactiveCls: 'border-[rgb(101_87_189_/_24%)] bg-[rgb(101_87_189_/_7%)] text-health-muted',
     iconActiveCls: 'text-white',
     iconInactiveCls: 'text-health-violet',
@@ -341,8 +354,12 @@ function MealContent({ event }: { event: MealEvent }) {
 function TabletContent({ event }: { event: TabletEvent }) {
   return (
     <>
-      <strong className={ui.timelineContentStrong}>{event.data.medicationName || 'Medicine'}</strong>
-      {event.data.dosage ? <span className={ui.timelineContentText}>{event.data.dosage}</span> : null}
+      <strong className={ui.timelineContentStrong}>
+        {event.data.medicationName || 'Medicine'}
+      </strong>
+      {event.data.dosage ? (
+        <span className={ui.timelineContentText}>{event.data.dosage}</span>
+      ) : null}
       {event.data.notes ? <small className={ui.timelineMutedText}>{event.data.notes}</small> : null}
     </>
   );

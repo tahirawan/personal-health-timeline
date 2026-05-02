@@ -1,4 +1,10 @@
-export const timelineEventTypes = ['bloodPressure', 'bloodSugar', 'meal', 'tablet', 'note'] as const;
+export const timelineEventTypes = [
+  'bloodPressure',
+  'bloodSugar',
+  'meal',
+  'tablet',
+  'note',
+] as const;
 
 export const mealRelations = [
   'fasting',

@@ -386,7 +386,10 @@ function HomeView({
   const bpSummary = useMemo(() => calculateBloodPressureSummary(bpReadings), [bpReadings]);
   const sugarSummary = useMemo(() => calculateBloodSugarSummary(sugarReadings), [sugarReadings]);
   const bpChartPoints = useMemo(() => createChartPoints(bpReadings), [bpReadings]);
-  const sugarChartPoints = useMemo(() => createBloodSugarChartPoints(sugarReadings), [sugarReadings]);
+  const sugarChartPoints = useMemo(
+    () => createBloodSugarChartPoints(sugarReadings),
+    [sugarReadings],
+  );
 
   const hasBpData = bpSummary.totalReadings > 0;
   const hasSugarData = sugarSummary.totalReadings > 0;
@@ -503,8 +506,14 @@ function HomeView({
           >
             {hasBpData ? (
               <div className={ui.statsGridCompact}>
-                <HomeMetricCard label="Avg systolic" value={displayNumber(bpSummary.averageSystolic)} />
-                <HomeMetricCard label="Avg diastolic" value={displayNumber(bpSummary.averageDiastolic)} />
+                <HomeMetricCard
+                  label="Avg systolic"
+                  value={displayNumber(bpSummary.averageSystolic)}
+                />
+                <HomeMetricCard
+                  label="Avg diastolic"
+                  value={displayNumber(bpSummary.averageDiastolic)}
+                />
                 <HomeMetricCard label="Avg pulse" value={displayNumber(bpSummary.averagePulse)} />
               </div>
             ) : (

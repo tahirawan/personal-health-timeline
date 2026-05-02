@@ -53,7 +53,6 @@ export function fromDateTimeLocalValue(value: string): string {
   return new Date(year, month - 1, day, hours, minutes).toISOString();
 }
 
-
 export function startOfLocalDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }

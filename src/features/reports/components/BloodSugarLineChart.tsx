@@ -34,20 +34,12 @@ const referenceLines = [
   { y: 140, label: '140 Post-meal limit', stroke: '#f97316' },
 ];
 
-export function BloodSugarLineChart({
-  points,
-  compact = false,
-  testId,
-}: BloodSugarLineChartProps) {
+export function BloodSugarLineChart({ points, compact = false, testId }: BloodSugarLineChartProps) {
   const chartHeight = compact ? 190 : 260;
   const chartScale = getChartScale(points);
 
   return (
-    <div
-      className={ui.chartPanel}
-      aria-label="Blood sugar trend chart"
-      data-testid={testId}
-    >
+    <div className={ui.chartPanel} aria-label="Blood sugar trend chart" data-testid={testId}>
       <ul className={ui.chartLegend} aria-label="Reference lines">
         {referenceLines.map((ref) => (
           <li className={ui.chartLegendItem} key={ref.y}>
@@ -126,11 +118,11 @@ export function BloodSugarLineChart({
   );
 }
 
-function getChartScale(points: BloodSugarChartPoint[]): { domain: [number, number]; ticks: number[] } {
-  const allValues = [
-    ...points.map((p) => p.reading),
-    ...referenceLines.map((r) => r.y),
-  ];
+function getChartScale(points: BloodSugarChartPoint[]): {
+  domain: [number, number];
+  ticks: number[];
+} {
+  const allValues = [...points.map((p) => p.reading), ...referenceLines.map((r) => r.y)];
 
   if (allValues.length === 0) {
     return { domain: [0, 200], ticks: [0, 50, 100, 150, 200] };
