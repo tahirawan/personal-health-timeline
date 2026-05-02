@@ -24,7 +24,7 @@ export function AddNoteForm({ initialEvent, onSubmit, onCancel }: AddNoteFormPro
       timestampLocal: initialEvent
         ? toDateTimeLocalValue(new Date(initialEvent.timestamp))
         : toDateTimeLocalValue(),
-      text: initialEvent?.text ?? '',
+      text: initialEvent?.data.text ?? '',
     },
   });
 

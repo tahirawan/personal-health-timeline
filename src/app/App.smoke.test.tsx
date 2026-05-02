@@ -47,7 +47,9 @@ describe('App smoke flow', () => {
 
     render(<App repository={createMemoryRepository()} />);
 
-    await user.click(screen.getByRole('button', { name: /add bp reading/i }));
+    await user.click(screen.getByRole('button', { name: /add reading/i }));
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: /blood pressure/i }));
     await user.type(screen.getByLabelText(/systolic/i), '120');
     await user.type(screen.getByLabelText(/diastolic/i), '75');
     await user.type(screen.getByLabelText(/pulse optional/i), '74');

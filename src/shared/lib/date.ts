@@ -45,8 +45,14 @@ export function toDateTimeLocalValue(date = new Date()): string {
 }
 
 export function fromDateTimeLocalValue(value: string): string {
-  return new Date(value).toISOString();
+  // Avoid iOS Safari bug: new Date("YYYY-MM-DDTHH:MM") is parsed as UTC on iOS.
+  // Using the multi-arg constructor always creates a local-time Date.
+  const [datePart, timePart = '00:00'] = value.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hours, minutes] = timePart.split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes).toISOString();
 }
+
 
 export function startOfLocalDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -61,13 +67,17 @@ export function addLocalDays(date: Date, days: number): Date {
 }
 
 export function dateOnlyToStartIso(dateOnly: string): string {
-  return new Date(`${dateOnly}T00:00`).toISOString();
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0).toISOString();
 }
 
 export function dateOnlyToExclusiveEndIso(dateOnly: string): string {
-  return addLocalDays(new Date(`${dateOnly}T00:00`), 1).toISOString();
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  return addLocalDays(new Date(year, month - 1, day), 1).toISOString();
 }
 
 export function combineDateAndTimeToIso(dateOnly: string, timeOnly: string): string {
-  return new Date(`${dateOnly}T${timeOnly}`).toISOString();
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  const [hours, minutes] = timeOnly.split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes).toISOString();
 }

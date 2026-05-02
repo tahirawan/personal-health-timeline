@@ -9,10 +9,15 @@ const events: TimelineEvent[] = [
     id: 'bp-1',
     type: 'bloodPressure',
     timestamp: new Date().toISOString(),
-    systolic: 120,
-    diastolic: 75,
-    pulse: 74,
-    mealRelation: 'after_breakfast',
+    data: { systolic: 120, diastolic: 75, pulse: 74, mealRelation: 'after_breakfast' },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'sugar-1',
+    type: 'bloodSugar',
+    timestamp: new Date(Date.now() - 30_000).toISOString(),
+    data: { reading: 95, unit: 'mg/dL', mealRelation: 'fasting' },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -20,8 +25,7 @@ const events: TimelineEvent[] = [
     id: 'meal-1',
     type: 'meal',
     timestamp: new Date(Date.now() - 60_000).toISOString(),
-    mealType: 'breakfast',
-    description: 'Egg with avocado sandwich',
+    data: { mealType: 'breakfast', description: 'Egg with avocado sandwich' },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -33,6 +37,8 @@ describe('TimelineList', () => {
 
     expect(screen.getByText('BP 120/75')).toBeInTheDocument();
     expect(screen.getByText(/pulse 74 after breakfast/i)).toBeInTheDocument();
+    expect(screen.getByText(/sugar 95 mg\/dL/i)).toBeInTheDocument();
+    expect(screen.getByText('Fasting')).toBeInTheDocument();
     expect(screen.getByText('Breakfast')).toBeInTheDocument();
     expect(screen.getByText('Egg with avocado sandwich')).toBeInTheDocument();
   });

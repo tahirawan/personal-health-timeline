@@ -233,6 +233,7 @@ export const toastToneClasses = {
 
 export const timelineIconClasses = {
   bloodPressure: 'bg-health-teal',
+  bloodSugar: 'bg-[#d97706]',
   meal: 'bg-health-accent',
   tablet: 'bg-[#2e6ecb]',
   note: 'bg-health-violet',

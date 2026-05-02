@@ -118,11 +118,11 @@ export function exportBloodPressureCsv(events: TimelineEvent[]): string {
     .map((event) =>
       [
         event.timestamp,
-        event.systolic,
-        event.diastolic,
-        event.pulse,
-        event.mealRelation,
-        event.notes,
+        event.data.systolic,
+        event.data.diastolic,
+        event.data.pulse,
+        event.data.mealRelation,
+        event.data.notes,
       ]
         .map(escapeCsvCell)
         .join(','),

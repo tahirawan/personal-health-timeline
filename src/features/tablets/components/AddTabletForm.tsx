@@ -28,9 +28,9 @@ export function AddTabletForm({ initialEvent, onSubmit, onCancel }: AddTabletFor
       timestampLocal: initialEvent
         ? toDateTimeLocalValue(new Date(initialEvent.timestamp))
         : toDateTimeLocalValue(),
-      medicationName: initialEvent?.medicationName ?? '',
-      dosage: initialEvent?.dosage ?? '',
-      notes: initialEvent?.notes ?? '',
+      medicationName: initialEvent?.data.medicationName ?? '',
+      dosage: initialEvent?.data.dosage ?? '',
+      notes: initialEvent?.data.notes ?? '',
     },
   });
 
@@ -77,7 +77,7 @@ export function AddTabletForm({ initialEvent, onSubmit, onCancel }: AddTabletFor
           </button>
         ) : null}
         <button className={ui.primaryButton} type="submit" disabled={isSubmitting}>
-          Save tablet
+          Save medicine
         </button>
       </div>
     </form>

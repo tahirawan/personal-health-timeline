@@ -10,8 +10,10 @@ export function buildMealEvent(values: MealFormValues, existing?: MealEvent): Me
     id: existing?.id ?? createId(),
     type: 'meal',
     timestamp: fromDateTimeLocalValue(values.timestampLocal),
-    mealType: values.mealType,
-    description: values.description,
+    data: {
+      mealType: values.mealType,
+      description: values.description,
+    },
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };

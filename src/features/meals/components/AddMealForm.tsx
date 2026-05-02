@@ -24,8 +24,8 @@ export function AddMealForm({ initialEvent, onSubmit, onCancel }: AddMealFormPro
       timestampLocal: initialEvent
         ? toDateTimeLocalValue(new Date(initialEvent.timestamp))
         : toDateTimeLocalValue(),
-      mealType: initialEvent?.mealType ?? 'breakfast',
-      description: initialEvent?.description ?? '',
+      mealType: initialEvent?.data.mealType ?? 'breakfast',
+      description: initialEvent?.data.description ?? '',
     },
   });
 

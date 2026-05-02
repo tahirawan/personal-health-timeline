@@ -104,7 +104,11 @@ function parseTimedDetail(
       id: createId(),
       type: 'tablet',
       timestamp,
-      notes: notes || undefined,
+      data: {
+        medicationName: undefined,
+        dosage: undefined,
+        notes: notes || undefined,
+      },
       createdAt: now,
       updatedAt: now,
     };
@@ -124,11 +128,13 @@ function parseTimedDetail(
       id: createId(),
       type: 'bloodPressure',
       timestamp,
-      systolic: Number(systolic),
-      diastolic: Number(diastolic),
-      pulse: pulse ? Number(pulse) : undefined,
-      mealRelation: relation.mealRelation,
-      notes: relation.notes,
+      data: {
+        systolic: Number(systolic),
+        diastolic: Number(diastolic),
+        pulse: pulse ? Number(pulse) : undefined,
+        mealRelation: relation.mealRelation,
+        notes: relation.notes,
+      },
       createdAt: now,
       updatedAt: now,
     };
@@ -159,8 +165,10 @@ function parseMealDetail(
     id: createId(),
     type: 'meal',
     timestamp,
-    mealType,
-    description: hyphenDescription?.trim() || parentheticalDescription?.trim() || undefined,
+    data: {
+      mealType,
+      description: hyphenDescription?.trim() || parentheticalDescription?.trim() || undefined,
+    },
     createdAt: now,
     updatedAt: now,
   };

@@ -10,7 +10,9 @@ export function buildNoteEvent(values: NoteFormValues, existing?: NoteEvent): No
     id: existing?.id ?? createId(),
     type: 'note',
     timestamp: fromDateTimeLocalValue(values.timestampLocal),
-    text: values.text,
+    data: {
+      text: values.text,
+    },
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };

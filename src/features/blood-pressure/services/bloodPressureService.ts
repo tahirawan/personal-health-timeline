@@ -14,11 +14,13 @@ export function buildBloodPressureEvent(
     id: existing?.id ?? createId(),
     type: 'bloodPressure',
     timestamp,
-    systolic: values.systolic,
-    diastolic: values.diastolic,
-    pulse: values.pulse,
-    mealRelation: values.mealRelation,
-    notes: values.notes,
+    data: {
+      systolic: values.systolic,
+      diastolic: values.diastolic,
+      pulse: values.pulse,
+      mealRelation: values.mealRelation,
+      notes: values.notes,
+    },
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };

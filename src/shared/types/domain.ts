@@ -1,6 +1,7 @@
-export const timelineEventTypes = ['bloodPressure', 'meal', 'tablet', 'note'] as const;
+export const timelineEventTypes = ['bloodPressure', 'bloodSugar', 'meal', 'tablet', 'note'] as const;
 
 export const mealRelations = [
+  'fasting',
   'before_breakfast',
   'after_breakfast',
   'before_lunch',
@@ -25,8 +26,9 @@ export type TimelineEventBase = {
   updatedAt: string;
 };
 
-export type BloodPressureEvent = TimelineEventBase & {
-  type: 'bloodPressure';
+// ── Named payload types ─────────────────────────────────────────────────────
+
+export type BloodPressureData = {
   systolic: number;
   diastolic: number;
   pulse?: number;
@@ -34,28 +36,58 @@ export type BloodPressureEvent = TimelineEventBase & {
   notes?: string;
 };
 
-export type MealEvent = TimelineEventBase & {
-  type: 'meal';
+export type BloodSugarData = {
+  reading: number;
+  unit?: 'mg/dL' | 'mmol/L';
+  mealRelation?: MealRelation;
+  notes?: string;
+};
+
+export type MealData = {
   mealType: MealType;
   description?: string;
 };
 
-export type TabletEvent = TimelineEventBase & {
-  type: 'tablet';
+export type TabletData = {
   medicationName?: string;
   dosage?: string;
   notes?: string;
 };
 
-export type NoteEvent = TimelineEventBase & {
-  type: 'note';
+export type NoteData = {
   text: string;
 };
 
-export type TimelineEvent = BloodPressureEvent | MealEvent | TabletEvent | NoteEvent;
+// ── Event types ─────────────────────────────────────────────────────────────
 
-export type TimelineEventDraft =
-  | Omit<BloodPressureEvent, keyof TimelineEventBase>
-  | Omit<MealEvent, keyof TimelineEventBase>
-  | Omit<TabletEvent, keyof TimelineEventBase>
-  | Omit<NoteEvent, keyof TimelineEventBase>;
+export type BloodPressureEvent = TimelineEventBase & {
+  type: 'bloodPressure';
+  data: BloodPressureData;
+};
+
+export type BloodSugarEvent = TimelineEventBase & {
+  type: 'bloodSugar';
+  data: BloodSugarData;
+};
+
+export type MealEvent = TimelineEventBase & {
+  type: 'meal';
+  data: MealData;
+};
+
+export type TabletEvent = TimelineEventBase & {
+  type: 'tablet';
+  data: TabletData;
+};
+
+export type NoteEvent = TimelineEventBase & {
+  type: 'note';
+  data: NoteData;
+};
+
+export type TimelineEvent =
+  | BloodPressureEvent
+  | BloodSugarEvent
+  | MealEvent
+  | TabletEvent
+  | NoteEvent;

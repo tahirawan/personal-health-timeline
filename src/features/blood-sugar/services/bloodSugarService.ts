@@ -1,18 +1,22 @@
 import { fromDateTimeLocalValue } from '../../../shared/lib/date';
 import { createId } from '../../../shared/lib/ids';
-import type { TabletEvent } from '../../../shared/types/domain';
-import type { TabletFormValues } from '../schemas/tabletFormSchema';
+import type { BloodSugarEvent } from '../../../shared/types/domain';
+import type { BloodSugarFormValues } from '../schemas/bloodSugarFormSchema';
 
-export function buildTabletEvent(values: TabletFormValues, existing?: TabletEvent): TabletEvent {
+export function buildBloodSugarEvent(
+  values: BloodSugarFormValues,
+  existing?: BloodSugarEvent,
+): BloodSugarEvent {
   const now = new Date().toISOString();
 
   return {
     id: existing?.id ?? createId(),
-    type: 'tablet',
+    type: 'bloodSugar',
     timestamp: fromDateTimeLocalValue(values.timestampLocal),
     data: {
-      medicationName: values.medicationName,
-      dosage: values.dosage,
+      reading: values.reading,
+      unit: 'mg/dL',
+      mealRelation: values.mealRelation,
       notes: values.notes,
     },
     createdAt: existing?.createdAt ?? now,

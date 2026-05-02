@@ -23,36 +23,56 @@ const optionalTrimmedString = z
 export const bloodPressureEventSchema = z.object({
   ...baseEventSchema,
   type: z.literal('bloodPressure'),
-  systolic: z.number().int().min(40).max(300),
-  diastolic: z.number().int().min(30).max(200),
-  pulse: z.number().int().min(30).max(220).optional(),
-  mealRelation: z.enum(mealRelations).optional(),
-  notes: optionalTrimmedString,
+  data: z.object({
+    systolic: z.number().int().min(40).max(300),
+    diastolic: z.number().int().min(30).max(200),
+    pulse: z.number().int().min(30).max(220).optional(),
+    mealRelation: z.enum(mealRelations).optional(),
+    notes: optionalTrimmedString,
+  }),
+});
+
+export const bloodSugarEventSchema = z.object({
+  ...baseEventSchema,
+  type: z.literal('bloodSugar'),
+  data: z.object({
+    reading: z.number().int().min(20).max(600),
+    unit: z.enum(['mg/dL', 'mmol/L']).optional(),
+    mealRelation: z.enum(mealRelations).optional(),
+    notes: optionalTrimmedString,
+  }),
 });
 
 export const mealEventSchema = z.object({
   ...baseEventSchema,
   type: z.literal('meal'),
-  mealType: z.enum(mealTypes),
-  description: optionalTrimmedString,
+  data: z.object({
+    mealType: z.enum(mealTypes),
+    description: optionalTrimmedString,
+  }),
 });
 
 export const tabletEventSchema = z.object({
   ...baseEventSchema,
   type: z.literal('tablet'),
-  medicationName: optionalTrimmedString,
-  dosage: optionalTrimmedString,
-  notes: optionalTrimmedString,
+  data: z.object({
+    medicationName: optionalTrimmedString,
+    dosage: optionalTrimmedString,
+    notes: optionalTrimmedString,
+  }),
 });
 
 export const noteEventSchema = z.object({
   ...baseEventSchema,
   type: z.literal('note'),
-  text: z.string().trim().min(1),
+  data: z.object({
+    text: z.string().trim().min(1),
+  }),
 });
 
 export const timelineEventSchema = z.discriminatedUnion('type', [
   bloodPressureEventSchema,
+  bloodSugarEventSchema,
   mealEventSchema,
   tabletEventSchema,
   noteEventSchema,

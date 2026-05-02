@@ -6,7 +6,7 @@ import {
   startOfLocalDay,
 } from '../../../shared/lib/date';
 import { average, maxValue, minValue } from '../../../shared/lib/numbers';
-import type { BloodPressureEvent, TimelineEvent } from '../../../shared/types/domain';
+import type { BloodPressureEvent, BloodSugarEvent, TimelineEvent } from '../../../shared/types/domain';
 
 export const reportPeriods = [
   'today',
@@ -38,9 +38,22 @@ export type BloodPressureSummary = {
 
 export type TimelineCounts = {
   readings: number;
+  bloodSugar: number;
   meals: number;
   tablets: number;
   notes: number;
+};
+
+export type BloodSugarSummary = {
+  averageReading?: number;
+  highestReading?: number;
+  lowestReading?: number;
+  totalReadings: number;
+};
+
+export type BloodSugarChartPoint = {
+  timestamp: string;
+  reading: number;
 };
 
 export type ChartPoint = {
@@ -117,10 +130,33 @@ export function filterBloodPressureEvents(events: TimelineEvent[]): BloodPressur
   return events.filter((event): event is BloodPressureEvent => event.type === 'bloodPressure');
 }
 
+export function filterBloodSugarEvents(events: TimelineEvent[]): BloodSugarEvent[] {
+  return events.filter((event): event is BloodSugarEvent => event.type === 'bloodSugar');
+}
+
+export function calculateBloodSugarSummary(events: BloodSugarEvent[]): BloodSugarSummary {
+  const readings = events.map((e) => e.data.reading);
+  return {
+    averageReading: average(readings),
+    highestReading: maxValue(readings),
+    lowestReading: minValue(readings),
+    totalReadings: events.length,
+  };
+}
+
+export function createBloodSugarChartPoints(events: BloodSugarEvent[]): BloodSugarChartPoint[] {
+  return [...events]
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    .map((event) => ({
+      timestamp: event.timestamp,
+      reading: event.data.reading,
+    }));
+}
+
 export function calculateBloodPressureSummary(events: BloodPressureEvent[]): BloodPressureSummary {
-  const systolic = events.map((event) => event.systolic);
-  const diastolic = events.map((event) => event.diastolic);
-  const pulse = events.flatMap((event) => (event.pulse === undefined ? [] : [event.pulse]));
+  const systolic = events.map((event) => event.data.systolic);
+  const diastolic = events.map((event) => event.data.diastolic);
+  const pulse = events.flatMap((event) => (event.data.pulse === undefined ? [] : [event.data.pulse]));
 
   return {
     averageSystolic: average(systolic),
@@ -137,6 +173,7 @@ export function calculateBloodPressureSummary(events: BloodPressureEvent[]): Blo
 export function countTimelineEvents(events: TimelineEvent[]): TimelineCounts {
   return {
     readings: events.filter((event) => event.type === 'bloodPressure').length,
+    bloodSugar: events.filter((event) => event.type === 'bloodSugar').length,
     meals: events.filter((event) => event.type === 'meal').length,
     tablets: events.filter((event) => event.type === 'tablet').length,
     notes: events.filter((event) => event.type === 'note').length,
@@ -154,8 +191,8 @@ export function createChartPoints(events: BloodPressureEvent[]): ChartPoint[] {
         hour: '2-digit',
         minute: '2-digit',
       }).format(new Date(event.timestamp)),
-      systolic: event.systolic,
-      diastolic: event.diastolic,
-      pulse: event.pulse,
+      systolic: event.data.systolic,
+      diastolic: event.data.diastolic,
+      pulse: event.data.pulse,
     }));
 }

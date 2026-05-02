@@ -18,9 +18,7 @@ const events: TimelineEvent[] = [
     id: 'bp-1',
     type: 'bloodPressure',
     timestamp: today.toISOString(),
-    systolic: 120,
-    diastolic: 75,
-    pulse: 74,
+    data: { systolic: 120, diastolic: 75, pulse: 74 },
     createdAt: today.toISOString(),
     updatedAt: today.toISOString(),
   }),
@@ -28,8 +26,7 @@ const events: TimelineEvent[] = [
     id: 'meal-1',
     type: 'meal',
     timestamp: twoDaysAgo.toISOString(),
-    mealType: 'lunch',
-    description: 'Lamb burger',
+    data: { mealType: 'lunch', description: 'Lamb burger' },
     createdAt: twoDaysAgo.toISOString(),
     updatedAt: twoDaysAgo.toISOString(),
   }),
@@ -45,7 +42,7 @@ describe('ReportsPanel', () => {
     expect(
       within(screen.getByLabelText(/blood pressure summary/i)).getAllByText('120'),
     ).toHaveLength(3);
-    expect(screen.getByText('Meals logged')).toBeInTheDocument();
+    expect(screen.getByText('Meals')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /open backup page/i })).toBeInTheDocument();
 
     await user.selectOptions(screen.getByRole('combobox', { name: /report period/i }), 'custom');

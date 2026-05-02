@@ -15,10 +15,7 @@ describe('smartTextImportService', () => {
     expect(result.events.map((event) => event.type)).toEqual(['tablet', 'bloodPressure', 'meal']);
     expect(result.events[1]).toMatchObject({
       type: 'bloodPressure',
-      systolic: 120,
-      diastolic: 75,
-      pulse: 74,
-      mealRelation: 'after_breakfast',
+      data: { systolic: 120, diastolic: 75, pulse: 74, mealRelation: 'after_breakfast' },
     });
   });
 
@@ -31,8 +28,7 @@ not a valid line
 
     expect(result.events[0]).toMatchObject({
       type: 'bloodPressure',
-      systolic: 128,
-      diastolic: 87,
+      data: { systolic: 128, diastolic: 87 },
     });
     expect(result.invalidLines).toHaveLength(1);
   });
@@ -45,8 +41,7 @@ not a valid line
 
     expect(result.events[0]).toMatchObject({
       type: 'bloodPressure',
-      mealRelation: 'before_breakfast',
-      notes: 'chappati with omelette',
+      data: { mealRelation: 'before_breakfast', notes: 'chappati with omelette' },
     });
   });
 });
