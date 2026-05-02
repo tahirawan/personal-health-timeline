@@ -92,7 +92,7 @@ export function BloodSugarLineChart({
                 <Tooltip
                   contentStyle={chartTooltipContentStyle}
                   cursor={chartTooltipCursor}
-                  formatter={(value) => [`${value} mg/dL`, 'Blood Sugar']}
+                  formatter={(value) => [`${String(value)} mg/dL`, 'Blood Sugar']}
                   itemStyle={chartTooltipItemStyle}
                   labelFormatter={formatChartTooltipLabel}
                   labelStyle={chartTooltipLabelStyle}
