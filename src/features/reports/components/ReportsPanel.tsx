@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { cn } from '../../../shared/lib/classNames';
 import { ui } from '../../../shared/lib/uiStyles';
 import { displayNumber } from '../../../shared/lib/numbers';
+import { SummaryGroupCard } from '../../../shared/components/SummaryGroupCard';
 import type { TimelineEvent } from '../../../shared/types/domain';
 import type { AppSettings } from '../../../shared/types/settings';
 import {
@@ -188,83 +189,101 @@ export function ReportsPanel({ events, settings, onOpenBackup }: ReportsPanelPro
 
       {visibleReportTypes.includes('bloodPressure') && (
         <>
-          <div className={ui.statsGrid} aria-label="Blood pressure summary">
-            {hasBpData ? (
-              <>
-                <MetricCard
-                  label="Avg systolic"
-                  value={displayNumber(report.bpSummary.averageSystolic)}
+          {hasBpData ? (
+            <>
+              {report.bpChartPoints.length > 0 && (
+                <BloodPressureLineChart points={report.bpChartPoints} testId="report-chart" />
+              )}
+              <div
+                className="mt-[18px] grid gap-3 lg:grid-cols-[1fr_1fr_0.9fr]"
+                aria-label="Blood pressure summary"
+              >
+                <SummaryGroupCard
+                  title="Average"
+                  tone="teal"
+                  items={[
+                    { label: 'Systolic', value: displayNumber(report.bpSummary.averageSystolic) },
+                    { label: 'Diastolic', value: displayNumber(report.bpSummary.averageDiastolic) },
+                    { label: 'Pulse', value: displayNumber(report.bpSummary.averagePulse) },
+                  ]}
                 />
-                <MetricCard
-                  label="Avg diastolic"
-                  value={displayNumber(report.bpSummary.averageDiastolic)}
+                <SummaryGroupCard
+                  title="Highest"
+                  tone="violet"
+                  items={[
+                    { label: 'Systolic', value: displayNumber(report.bpSummary.highestSystolic) },
+                    { label: 'Diastolic', value: displayNumber(report.bpSummary.highestDiastolic) },
+                  ]}
                 />
-                <MetricCard
-                  label="Avg pulse"
-                  value={displayNumber(report.bpSummary.averagePulse)}
+                <SummaryGroupCard
+                  title="Range"
+                  tone="teal"
+                  items={[
+                    { label: 'Low sys', value: displayNumber(report.bpSummary.lowestSystolic) },
+                    { label: 'Low dia', value: displayNumber(report.bpSummary.lowestDiastolic) },
+                    { label: 'Readings', value: String(report.bpSummary.totalReadings) },
+                  ]}
                 />
-                <MetricCard
-                  label="Highest systolic"
-                  value={displayNumber(report.bpSummary.highestSystolic)}
-                />
-                <MetricCard
-                  label="Highest diastolic"
-                  value={displayNumber(report.bpSummary.highestDiastolic)}
-                />
-                <MetricCard
-                  label="Lowest systolic"
-                  value={displayNumber(report.bpSummary.lowestSystolic)}
-                />
-                <MetricCard
-                  label="Lowest diastolic"
-                  value={displayNumber(report.bpSummary.lowestDiastolic)}
-                />
-                <MetricCard label="Total readings" value={String(report.bpSummary.totalReadings)} />
-              </>
-            ) : (
-              <p className={ui.emptyState}>No blood pressure readings in this period.</p>
-            )}
-          </div>
-          {report.bpChartPoints.length > 0 && (
-            <BloodPressureLineChart points={report.bpChartPoints} testId="report-chart" />
+              </div>
+            </>
+          ) : (
+            <p className={ui.emptyState}>No blood pressure readings in this period.</p>
           )}
         </>
       )}
 
       {visibleReportTypes.includes('bloodSugar') && (
         <>
-          <div className={ui.statsGrid} aria-label="Blood sugar summary">
-            {hasSugarData ? (
-              <>
-                <MetricCard
-                  label="Avg reading"
-                  value={`${displayNumber(report.sugarSummary.averageReading)} mg/dL`}
+          {hasSugarData ? (
+            <>
+              {report.sugarChartPoints.length > 0 && (
+                <BloodSugarLineChart points={report.sugarChartPoints} testId="sugar-report-chart" />
+              )}
+              <div
+                className="mt-[18px] grid gap-3 md:grid-cols-2 lg:grid-cols-3"
+                aria-label="Blood sugar summary"
+              >
+                <SummaryGroupCard
+                  title="Average"
+                  tone="orange"
+                  items={[
+                    {
+                      label: 'Reading',
+                      value: `${displayNumber(report.sugarSummary.averageReading)} mg/dL`,
+                    },
+                    { label: 'Readings', value: String(report.sugarSummary.totalReadings) },
+                  ]}
                 />
-                <MetricCard
-                  label="Highest"
-                  value={`${displayNumber(report.sugarSummary.highestReading)} mg/dL`}
+                <SummaryGroupCard
+                  title="Highest"
+                  tone="violet"
+                  items={[
+                    {
+                      label: 'Reading',
+                      value: `${displayNumber(report.sugarSummary.highestReading)} mg/dL`,
+                    },
+                  ]}
                 />
-                <MetricCard
-                  label="Lowest"
-                  value={`${displayNumber(report.sugarSummary.lowestReading)} mg/dL`}
+                <SummaryGroupCard
+                  title="Lowest"
+                  tone="orange"
+                  items={[
+                    {
+                      label: 'Reading',
+                      value: `${displayNumber(report.sugarSummary.lowestReading)} mg/dL`,
+                    },
+                  ]}
                 />
-                <MetricCard
-                  label="Total readings"
-                  value={String(report.sugarSummary.totalReadings)}
-                />
-              </>
-            ) : (
-              <p className={ui.emptyState}>No blood sugar readings in this period.</p>
-            )}
-          </div>
-          {report.sugarChartPoints.length > 0 && (
-            <BloodSugarLineChart points={report.sugarChartPoints} testId="sugar-report-chart" />
+              </div>
+            </>
+          ) : (
+            <p className={ui.emptyState}>No blood sugar readings in this period.</p>
           )}
         </>
       )}
 
       {hasAnyData && enabledReportTypes.length > 0 && (
-        <div className={ui.statsGridCompact} aria-label="Timeline counts">
+        <div className={cn(ui.statsGridCompact, 'mt-[18px]')} aria-label="Timeline counts">
           <MetricCard label="BP readings" value={String(report.counts.readings)} />
           <MetricCard label="Sugar readings" value={String(report.counts.bloodSugar)} />
           <MetricCard label="Meals" value={String(report.counts.meals)} />

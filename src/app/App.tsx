@@ -49,6 +49,7 @@ import { buildNoteEvent } from '../features/timeline/services/noteService';
 import { ConfirmDialog, type ConfirmDialogState } from '../shared/components/ConfirmDialog';
 import { Disclaimer } from '../shared/components/Disclaimer';
 import { Modal } from '../shared/components/Modal';
+import { SummaryGroupCard } from '../shared/components/SummaryGroupCard';
 import {
   ToastViewport,
   type ToastMessage,
@@ -421,53 +422,63 @@ function FloatingAddButton({
   };
 
   return (
-    <div className="fixed right-5 bottom-[calc(env(safe-area-inset-bottom)+22px)] z-20 flex flex-col items-end gap-3 max-[420px]:right-4">
+    <>
       {isOpen ? (
-        <div
-          className="grid gap-2 rounded-[24px] border border-white/40 bg-[linear-gradient(145deg,rgb(255_255_255_/_96%),rgb(235_248_244_/_90%))] p-2.5 shadow-health-panel backdrop-blur-[18px]"
-          role="menu"
-          aria-label="Add event options"
-        >
-          {options.length > 0 ? (
-            options.map((option) => {
-              const Icon = option.icon;
-              return (
-                <button
-                  key={option.formName}
-                  className="flex min-h-11 min-w-48 items-center justify-start gap-3 rounded-[18px] border border-[rgb(19_139_131_/_12%)] bg-white/70 px-3.5 py-2.5 text-left font-extrabold text-health-ink shadow-[0_10px_24px_rgb(6_21_28_/_8%)] transition-transform duration-150 hover:-translate-y-px focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(19_139_131_/_30%)]"
-                  type="button"
-                  role="menuitem"
-                  onClick={() => chooseOption(option.formName)}
-                >
-                  <span
-                    className={cn(
-                      'grid h-8 w-8 shrink-0 place-items-center rounded-full text-white',
-                      option.className,
-                    )}
-                  >
-                    <Icon size={18} />
-                  </span>
-                  {option.label}
-                </button>
-              );
-            })
-          ) : (
-            <p className="m-0 max-w-48 px-2 py-1 text-sm leading-5 text-health-muted">
-              Enable an add option in settings.
-            </p>
-          )}
-        </div>
+        <button
+          className="fixed inset-0 z-20 cursor-default bg-[rgb(6_21_28_/_24%)] backdrop-blur-[2px]"
+          type="button"
+          aria-label="Dismiss add menu"
+          onClick={() => setIsOpen(false)}
+        />
       ) : null}
-      <button
-        className="grid h-14 w-14 place-items-center rounded-full border border-white/40 bg-[linear-gradient(135deg,var(--color-health-primary-strong),var(--color-health-teal))] text-white shadow-[0_18px_40px_rgb(6_21_28_/_34%)] transition-transform duration-150 hover:-translate-y-px focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(255_255_255_/_45%)] disabled:cursor-not-allowed disabled:opacity-60"
-        type="button"
-        aria-label={isOpen ? 'Close add menu' : 'Open add menu'}
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((current) => !current)}
-      >
-        {isOpen ? <X size={26} /> : <Plus size={28} />}
-      </button>
-    </div>
+      <div className="fixed right-5 bottom-[calc(env(safe-area-inset-bottom)+22px)] z-30 flex flex-col items-end gap-3 max-[420px]:right-4">
+        {isOpen ? (
+          <div
+            className="grid gap-2 rounded-[24px] border border-white/40 bg-[linear-gradient(145deg,rgb(255_255_255_/_96%),rgb(235_248_244_/_90%))] p-2.5 shadow-health-panel backdrop-blur-[18px]"
+            role="menu"
+            aria-label="Add event options"
+          >
+            {options.length > 0 ? (
+              options.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.formName}
+                    className="flex min-h-11 min-w-48 items-center justify-start gap-3 rounded-[18px] border border-[rgb(19_139_131_/_12%)] bg-white/70 px-3.5 py-2.5 text-left font-extrabold text-health-ink shadow-[0_10px_24px_rgb(6_21_28_/_8%)] transition-transform duration-150 hover:-translate-y-px focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(19_139_131_/_30%)]"
+                    type="button"
+                    role="menuitem"
+                    onClick={() => chooseOption(option.formName)}
+                  >
+                    <span
+                      className={cn(
+                        'grid h-8 w-8 shrink-0 place-items-center rounded-full text-white',
+                        option.className,
+                      )}
+                    >
+                      <Icon size={18} />
+                    </span>
+                    {option.label}
+                  </button>
+                );
+              })
+            ) : (
+              <p className="m-0 max-w-48 px-2 py-1 text-sm leading-5 text-health-muted">
+                Enable an add option in settings.
+              </p>
+            )}
+          </div>
+        ) : null}
+        <button
+          className="grid h-14 w-14 place-items-center rounded-full border border-white/40 bg-[linear-gradient(135deg,var(--color-health-primary-strong),var(--color-health-teal))] text-white shadow-[0_18px_40px_rgb(6_21_28_/_34%)] transition-transform duration-150 hover:-translate-y-px focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(255_255_255_/_45%)] disabled:cursor-not-allowed disabled:opacity-60"
+          type="button"
+          aria-label={isOpen ? 'Close add menu' : 'Open add menu'}
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((current) => !current)}
+        >
+          {isOpen ? <X size={26} /> : <Plus size={28} />}
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -603,8 +614,8 @@ function HomeView({
   return (
     <>
       <section className={ui.section} aria-labelledby="trend-heading">
-        <div className={ui.sectionHeadingRow}>
-          <h2 className={ui.h2} id="trend-heading">
+        <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
+          <h2 className="m-0 text-[1.15rem] font-bold" id="trend-heading">
             Recent trend
           </h2>
           <label className="flex cursor-pointer items-center gap-2.5 text-sm font-extrabold text-health-ink">
@@ -643,18 +654,24 @@ function HomeView({
                 onToggle={() => setBpOpen(!bpOpen)}
               >
                 {hasBpData ? (
-                  <div className={ui.statsGridCompact}>
-                    <HomeMetricCard
-                      label="Avg systolic"
-                      value={displayNumber(bpSummary.averageSystolic)}
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <SummaryGroupCard
+                      title="Average"
+                      tone="teal"
+                      items={[
+                        { label: 'Systolic', value: displayNumber(bpSummary.averageSystolic) },
+                        { label: 'Diastolic', value: displayNumber(bpSummary.averageDiastolic) },
+                        { label: 'Pulse', value: displayNumber(bpSummary.averagePulse) },
+                      ]}
                     />
-                    <HomeMetricCard
-                      label="Avg diastolic"
-                      value={displayNumber(bpSummary.averageDiastolic)}
-                    />
-                    <HomeMetricCard
-                      label="Avg pulse"
-                      value={displayNumber(bpSummary.averagePulse)}
+                    <SummaryGroupCard
+                      title="Highest"
+                      tone="violet"
+                      items={[
+                        { label: 'Systolic', value: displayNumber(bpSummary.highestSystolic) },
+                        { label: 'Diastolic', value: displayNumber(bpSummary.highestDiastolic) },
+                        { label: 'Readings', value: String(bpSummary.totalReadings) },
+                      ]}
                     />
                   </div>
                 ) : (
@@ -675,18 +692,31 @@ function HomeView({
                 onToggle={() => setSugarOpen(!sugarOpen)}
               >
                 {hasSugarData ? (
-                  <div className={ui.statsGridCompact}>
-                    <HomeMetricCard
-                      label="Avg reading"
-                      value={`${displayNumber(sugarSummary.averageReading)} mg/dL`}
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <SummaryGroupCard
+                      title="Average"
+                      tone="orange"
+                      items={[
+                        {
+                          label: 'Reading',
+                          value: `${displayNumber(sugarSummary.averageReading)} mg/dL`,
+                        },
+                        { label: 'Readings', value: String(sugarSummary.totalReadings) },
+                      ]}
                     />
-                    <HomeMetricCard
-                      label="Highest"
-                      value={`${displayNumber(sugarSummary.highestReading)} mg/dL`}
-                    />
-                    <HomeMetricCard
-                      label="Lowest"
-                      value={`${displayNumber(sugarSummary.lowestReading)} mg/dL`}
+                    <SummaryGroupCard
+                      title="Highest"
+                      tone="violet"
+                      items={[
+                        {
+                          label: 'Reading',
+                          value: `${displayNumber(sugarSummary.highestReading)} mg/dL`,
+                        },
+                        {
+                          label: 'Lowest',
+                          value: `${displayNumber(sugarSummary.lowestReading)} mg/dL`,
+                        },
+                      ]}
                     />
                   </div>
                 ) : (
@@ -760,15 +790,6 @@ function AccordionPanel({
         />
       </button>
       {isOpen && <div className="px-[18px] pb-4 pt-4">{children}</div>}
-    </div>
-  );
-}
-
-function HomeMetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className={ui.metricCard}>
-      <span className={ui.metricLabel}>{label}</span>
-      <strong className={ui.metricValue}>{value}</strong>
     </div>
   );
 }

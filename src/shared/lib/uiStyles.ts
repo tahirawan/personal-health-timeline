@@ -145,22 +145,22 @@ export const ui = {
   metricValue:
     'break-words text-[clamp(1.35rem,4vw,2rem)] leading-none text-health-ink max-[680px]:text-[1.65rem]',
   chartPanel: cn(
-    'mt-[18px] min-h-[278px] w-full overflow-hidden rounded-[20px] px-4 pt-4 pb-2 text-white max-[680px]:px-3.5',
+    'mt-[18px] min-h-[244px] w-full overflow-hidden rounded-[20px] px-4 pt-4 pb-1 text-white max-[680px]:px-3.5',
     'bg-[linear-gradient(135deg,rgb(9_41_50_/_96%),rgb(62_82_132_/_92%))]',
   ),
-  miniChartPanel: 'min-h-52',
+  miniChartPanel: 'min-h-[190px]',
   chartLegend:
     'm-0 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-xs font-extrabold text-white/84',
   chartLegendItem: 'inline-flex items-center gap-2',
   chartScrollArea:
-    'mt-2.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin] [scrollbar-color:rgb(255_255_255_/_34%)_transparent]',
+    'mt-2 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:thin] [scrollbar-color:rgb(255_255_255_/_34%)_transparent]',
   chartTrack: 'flex min-w-full items-stretch',
   chartStickyAxis:
     'sticky left-0 z-10 w-11 shrink-0 bg-[linear-gradient(90deg,rgb(9_41_50_/_98%),rgb(9_41_50_/_90%)_72%,rgb(9_41_50_/_0%))] pr-2 text-right',
   chartYAxisLabels:
-    'flex h-full flex-col justify-between pt-2 pb-11 text-[0.72rem] font-extrabold text-white/78',
-  chartCanvas: 'h-[260px] min-w-0 flex-1 max-[680px]:pr-2',
-  miniChartCanvas: 'h-[190px]',
+    'flex h-full flex-col justify-between pt-1.5 pb-8 text-[0.72rem] font-extrabold text-white/78',
+  chartCanvas: 'h-[240px] min-w-0 flex-1 max-[680px]:pr-2',
+  miniChartCanvas: 'h-[170px]',
   chartEmptyState: 'mb-0 px-[18px] text-white/80',
   linkPanel: cn(
     'mt-[18px] flex items-center justify-between gap-4 rounded-[20px] border border-[rgb(19_139_131_/_16%)] px-[18px] py-4 max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:rounded-2xl max-[680px]:px-3.5 max-[680px]:py-3',

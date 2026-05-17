@@ -60,6 +60,26 @@ function createMemorySettingsRepository(
 }
 
 describe('App smoke flow', () => {
+  it('closes the floating add menu when the backdrop is pressed', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <App
+        repository={createMemoryRepository()}
+        settingsStore={createMemorySettingsRepository()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /open add menu/i }));
+    expect(await screen.findByRole('menu', { name: /add event options/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /dismiss add menu/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('menu', { name: /add event options/i })).not.toBeInTheDocument();
+    });
+  });
+
   it('adds a BP reading, shows it in today timeline, and includes it in reports', async () => {
     const user = userEvent.setup();
 
@@ -84,7 +104,7 @@ describe('App smoke flow', () => {
 
     await waitFor(() => {
       const summary = screen.getByLabelText(/blood pressure summary/i);
-      expect(within(summary).getByText('Total readings')).toBeInTheDocument();
+      expect(within(summary).getByText('Readings')).toBeInTheDocument();
       expect(within(summary).getByText('1')).toBeInTheDocument();
     });
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();

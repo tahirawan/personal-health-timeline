@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -45,6 +45,20 @@ describe('ReportsPanel', () => {
     ).toHaveLength(3);
     expect(screen.getByText('Meals')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /open backup page/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /expand blood pressure chart/i }));
+    expect(
+      await screen.findByRole('dialog', { name: /expanded blood pressure chart/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /close expanded blood pressure chart/i }),
+    ).toBeVisible();
+    await user.click(screen.getByRole('button', { name: /close expanded blood pressure chart/i }));
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('dialog', { name: /expanded blood pressure chart/i }),
+      ).not.toBeInTheDocument();
+    });
 
     await user.selectOptions(screen.getByRole('combobox', { name: /report period/i }), 'custom');
 

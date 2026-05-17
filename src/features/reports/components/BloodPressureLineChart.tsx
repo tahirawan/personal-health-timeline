@@ -48,7 +48,8 @@ export function BloodPressureLineChart({
   testId,
 }: BloodPressureLineChartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const chartHeight = expandedView ? 420 : compact ? 190 : 260;
+  const chartHeight = expandedView ? '100%' : compact ? 170 : 240;
+  const axisHeight = expandedView ? '100%' : chartHeight;
   const chartScale = getChartScale(points);
 
   return (
@@ -57,7 +58,7 @@ export function BloodPressureLineChart({
         className={cn(
           ui.chartPanel,
           compact && ui.miniChartPanel,
-          expandedView && 'm-0 h-full min-h-0',
+          expandedView && 'm-0 grid h-full !min-h-0 grid-rows-[auto_minmax(0,1fr)]',
         )}
         aria-label="Blood pressure trend chart"
         data-testid={testId}
@@ -92,11 +93,14 @@ export function BloodPressureLineChart({
             </button>
           ) : null}
         </div>
-        <div className={ui.chartScrollArea}>
-          <div className={ui.chartTrack} style={{ minWidth: getChartMinWidth(points.length) }}>
+        <div className={cn(ui.chartScrollArea, expandedView && 'min-h-0')}>
+          <div
+            className={cn(ui.chartTrack, expandedView && 'h-full')}
+            style={{ minWidth: getChartMinWidth(points.length) }}
+          >
             <div
               className={ui.chartStickyAxis}
-              style={{ height: chartHeight }}
+              style={{ height: axisHeight }}
               aria-label="Chart y-axis values"
             >
               <div className={ui.chartYAxisLabels}>
@@ -108,12 +112,11 @@ export function BloodPressureLineChart({
             <div
               className={cn(
                 ui.chartCanvas,
-                compact && ui.miniChartCanvas,
-                expandedView && 'h-[420px]',
+                expandedView ? 'h-full' : compact && ui.miniChartCanvas,
               )}
             >
               <ResponsiveContainer width="100%" height={chartHeight}>
-                <LineChart data={points} margin={{ top: 8, right: 18, left: 0, bottom: 2 }}>
+                <LineChart data={points} margin={{ top: 8, right: 18, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="4 4" stroke="rgb(255 255 255 / 16%)" />
                   <XAxis
                     dataKey="timestamp"
@@ -123,8 +126,8 @@ export function BloodPressureLineChart({
                     tickFormatter={formatChartTick}
                     tickLine={false}
                     axisLine={false}
-                    height={38}
-                    tickMargin={10}
+                    height={30}
+                    tickMargin={6}
                   />
                   <YAxis domain={chartScale.domain} hide ticks={chartScale.ticks} />
                   <Tooltip
@@ -177,22 +180,22 @@ export function BloodPressureLineChart({
       </div>
       {isExpanded ? (
         <div
-          className="fixed inset-0 z-40 grid bg-[rgb(6_21_28_/_92%)] p-3 backdrop-blur-[16px]"
+          className="fixed inset-0 z-40 overflow-hidden bg-[rgb(6_21_28_/_92%)] p-2 backdrop-blur-[16px]"
           role="dialog"
           aria-modal="true"
           aria-label="Expanded blood pressure chart"
         >
-          <div className="grid min-h-0 grid-rows-[auto_1fr] gap-3">
-            <div className="flex items-center justify-between gap-3 text-white">
+          <button
+            className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] right-3 z-50 grid h-11 w-11 place-items-center rounded-full border border-white/24 bg-white/14 text-white shadow-[0_16px_36px_rgb(0_0_0_/_30%)] backdrop-blur-[12px] transition-colors duration-150 hover:bg-white/22 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(255_255_255_/_45%)]"
+            type="button"
+            aria-label="Close expanded blood pressure chart"
+            onClick={() => setIsExpanded(false)}
+          >
+            <X size={22} />
+          </button>
+          <div className="absolute top-1/2 left-1/2 grid h-[100svh] w-[100svw] min-h-0 -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_minmax(0,1fr)] gap-3 p-2 portrait:h-[100svw] portrait:w-[100svh] portrait:rotate-90 landscape:h-[100svh] landscape:w-[100svw]">
+            <div className="flex items-center justify-between gap-3 pr-14 text-white">
               <h2 className="m-0 text-lg font-extrabold">Blood pressure chart</h2>
-              <button
-                className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white"
-                type="button"
-                aria-label="Close expanded blood pressure chart"
-                onClick={() => setIsExpanded(false)}
-              >
-                <X size={20} />
-              </button>
             </div>
             <BloodPressureLineChart
               allowExpand={false}
