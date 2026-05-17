@@ -5,9 +5,11 @@ import {
   Droplets,
   Home,
   Pill,
+  Plus,
   Settings,
   StickyNote,
   Utensils,
+  X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -59,6 +61,10 @@ import { createId } from '../shared/lib/ids';
 import { displayNumber } from '../shared/lib/numbers';
 import { ui } from '../shared/lib/uiStyles';
 import { requestPersistentStorage } from '../shared/storage/db';
+import {
+  settingsRepository as defaultSettingsRepository,
+  type SettingsRepository,
+} from '../shared/storage/settingsRepository';
 import { timelineRepository, type TimelineRepository } from '../shared/storage/timelineRepository';
 import type {
   BloodPressureEvent,
@@ -68,10 +74,12 @@ import type {
   TabletEvent,
   TimelineEvent,
 } from '../shared/types/domain';
+import { defaultAppSettings, type AppSettings } from '../shared/types/settings';
 import type { ImportMode } from '../shared/types/storage';
 
 type AppProps = {
   repository?: TimelineRepository;
+  settingsStore?: SettingsRepository;
 };
 
 type ViewName = 'home' | 'timeline' | 'reports' | 'backup' | 'settings';
@@ -86,8 +94,12 @@ const viewItems: Array<{ id: ViewName; label: string; icon: typeof Home }> = [
 
 const toastPosition: ToastPosition = 'top-right';
 
-export function App({ repository = timelineRepository }: AppProps) {
+export function App({
+  repository = timelineRepository,
+  settingsStore = defaultSettingsRepository,
+}: AppProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
+  const [appSettings, setAppSettings] = useState<AppSettings>(defaultAppSettings);
   const [view, setView] = useState<ViewName>('home');
   const [activeForm, setActiveForm] = useState<FormName | undefined>();
   const [pickerFlow, setPickerFlow] = useState(false);
@@ -136,6 +148,20 @@ export function App({ repository = timelineRepository }: AppProps) {
     void loadEvents();
     void requestPersistentStorage().then(setPersistentStorageGranted);
   }, [loadEvents]);
+
+  useEffect(() => {
+    void settingsStore.getSettings().then(setAppSettings);
+  }, [settingsStore]);
+
+  const handleSettingsChange = useCallback(
+    (settings: AppSettings) => {
+      setAppSettings(settings);
+      void settingsStore.saveSettings(settings).catch(() => {
+        showToast('error', 'Could not save local settings.');
+      });
+    },
+    [settingsStore, showToast],
+  );
 
   const todayEvents = useMemo(
     () => filterEventsForLocalDate(events, toLocalDateKey(new Date())),
@@ -290,10 +316,7 @@ export function App({ repository = timelineRepository }: AppProps) {
             <HomeView
               events={events}
               todayEvents={todayEvents}
-              onAdd={(formName) => {
-                if (formName === 'readingTypePicker') setPickerFlow(true);
-                setActiveForm(formName);
-              }}
+              settings={appSettings}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
@@ -304,12 +327,17 @@ export function App({ repository = timelineRepository }: AppProps) {
               title="Full timeline"
               emptyMessage="No timeline events yet. Add a reading, meal, medicine, or note."
               showFilters
+              showRangeControls
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
           ) : null}
           {view === 'reports' ? (
-            <ReportsPanel events={events} onOpenBackup={() => setView('backup')} />
+            <ReportsPanel
+              events={events}
+              settings={appSettings}
+              onOpenBackup={() => setView('backup')}
+            />
           ) : null}
           {view === 'backup' ? (
             <BackupPanel
@@ -322,18 +350,30 @@ export function App({ repository = timelineRepository }: AppProps) {
           {view === 'settings' ? (
             <SettingsPanel
               persistentStorageGranted={persistentStorageGranted}
+              settings={appSettings}
+              onSettingsChange={handleSettingsChange}
               onOpenBackup={() => setView('backup')}
             />
           ) : null}
         </main>
 
         <Disclaimer />
+        {!activeForm && !confirmDialog ? (
+          <FloatingAddButton
+            settings={appSettings}
+            onAdd={(formName) => {
+              setPickerFlow(false);
+              setActiveForm(formName);
+            }}
+          />
+        ) : null}
         {activeForm ? (
           <Modal title={getModalTitle(activeForm, editingEvent)} onClose={closeForm}>
             {renderActiveForm({
               activeForm,
               editingEvent,
               pickerFlow,
+              settings: appSettings,
               onCancel: closeForm,
               onBackToPicker: () => setActiveForm('readingTypePicker'),
               onPickReading: (type) => setActiveForm(type),
@@ -358,16 +398,140 @@ export function App({ repository = timelineRepository }: AppProps) {
   );
 }
 
+type AddOption = {
+  formName: Exclude<FormName, 'readingTypePicker'>;
+  label: string;
+  icon: typeof Activity;
+  className: string;
+};
+
+function FloatingAddButton({
+  settings,
+  onAdd,
+}: {
+  settings: AppSettings;
+  onAdd: (formName: Exclude<FormName, 'readingTypePicker'>) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const options = getAddOptions(settings);
+
+  const chooseOption = (formName: Exclude<FormName, 'readingTypePicker'>) => {
+    onAdd(formName);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="fixed right-5 bottom-[calc(env(safe-area-inset-bottom)+22px)] z-20 flex flex-col items-end gap-3 max-[420px]:right-4">
+      {isOpen ? (
+        <div
+          className="grid gap-2 rounded-[24px] border border-white/40 bg-[linear-gradient(145deg,rgb(255_255_255_/_96%),rgb(235_248_244_/_90%))] p-2.5 shadow-health-panel backdrop-blur-[18px]"
+          role="menu"
+          aria-label="Add event options"
+        >
+          {options.length > 0 ? (
+            options.map((option) => {
+              const Icon = option.icon;
+              return (
+                <button
+                  key={option.formName}
+                  className="flex min-h-11 min-w-48 items-center justify-start gap-3 rounded-[18px] border border-[rgb(19_139_131_/_12%)] bg-white/70 px-3.5 py-2.5 text-left font-extrabold text-health-ink shadow-[0_10px_24px_rgb(6_21_28_/_8%)] transition-transform duration-150 hover:-translate-y-px focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(19_139_131_/_30%)]"
+                  type="button"
+                  role="menuitem"
+                  onClick={() => chooseOption(option.formName)}
+                >
+                  <span
+                    className={cn(
+                      'grid h-8 w-8 shrink-0 place-items-center rounded-full text-white',
+                      option.className,
+                    )}
+                  >
+                    <Icon size={18} />
+                  </span>
+                  {option.label}
+                </button>
+              );
+            })
+          ) : (
+            <p className="m-0 max-w-48 px-2 py-1 text-sm leading-5 text-health-muted">
+              Enable an add option in settings.
+            </p>
+          )}
+        </div>
+      ) : null}
+      <button
+        className="grid h-14 w-14 place-items-center rounded-full border border-white/40 bg-[linear-gradient(135deg,var(--color-health-primary-strong),var(--color-health-teal))] text-white shadow-[0_18px_40px_rgb(6_21_28_/_34%)] transition-transform duration-150 hover:-translate-y-px focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(255_255_255_/_45%)] disabled:cursor-not-allowed disabled:opacity-60"
+        type="button"
+        aria-label={isOpen ? 'Close add menu' : 'Open add menu'}
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        {isOpen ? <X size={26} /> : <Plus size={28} />}
+      </button>
+    </div>
+  );
+}
+
+function getAddOptions(settings: AppSettings): AddOption[] {
+  const options: AddOption[] = [];
+
+  if (settings.features.bloodPressure) {
+    options.push({
+      formName: 'bloodPressure',
+      label: 'Blood Pressure',
+      icon: Activity,
+      className: 'bg-health-teal',
+    });
+  }
+
+  if (settings.features.bloodSugar) {
+    options.push({
+      formName: 'bloodSugar',
+      label: 'Blood Sugar',
+      icon: Droplets,
+      className: 'bg-[#d97706]',
+    });
+  }
+
+  if (settings.features.meals) {
+    options.push({
+      formName: 'meal',
+      label: 'Meal',
+      icon: Utensils,
+      className: 'bg-health-accent',
+    });
+  }
+
+  if (settings.features.medicine) {
+    options.push({
+      formName: 'tablet',
+      label: 'Medicine',
+      icon: Pill,
+      className: 'bg-[#2e6ecb]',
+    });
+  }
+
+  if (settings.features.notes) {
+    options.push({
+      formName: 'note',
+      label: 'Note',
+      icon: StickyNote,
+      className: 'bg-health-violet',
+    });
+  }
+
+  return options;
+}
+
 function HomeView({
   events,
   todayEvents,
-  onAdd,
+  settings,
   onEdit,
   onDelete,
 }: {
   events: TimelineEvent[];
   todayEvents: TimelineEvent[];
-  onAdd: (formName: FormName) => void;
+  settings: AppSettings;
   onEdit: (event: TimelineEvent) => void;
   onDelete: (event: TimelineEvent) => void;
 }) {
@@ -438,34 +602,6 @@ function HomeView({
 
   return (
     <>
-      <section className={ui.section} aria-labelledby="quick-add-heading">
-        <h2 className={ui.h2} id="quick-add-heading">
-          Quick add
-        </h2>
-        <div className={ui.quickActions}>
-          <button
-            className={ui.quickPrimaryButton}
-            type="button"
-            onClick={() => onAdd('readingTypePicker')}
-          >
-            <Activity className={ui.quickIcon} size={20} />
-            Add Reading
-          </button>
-          <button className={ui.quickSecondaryButton} type="button" onClick={() => onAdd('meal')}>
-            <Utensils className={ui.quickIcon} size={20} />
-            Add Meal
-          </button>
-          <button className={ui.quickSecondaryButton} type="button" onClick={() => onAdd('tablet')}>
-            <Pill className={ui.quickIcon} size={20} />
-            Add Medicine
-          </button>
-          <button className={ui.quickSecondaryButton} type="button" onClick={() => onAdd('note')}>
-            <StickyNote className={ui.quickIcon} size={20} />
-            Add Note
-          </button>
-        </div>
-      </section>
-
       <section className={ui.section} aria-labelledby="trend-heading">
         <div className={ui.sectionHeadingRow}>
           <h2 className={ui.h2} id="trend-heading">
@@ -496,64 +632,79 @@ function HomeView({
           </label>
         </div>
 
-        <div className="grid gap-3">
-          <AccordionPanel
-            title="Blood Pressure"
-            subtitle={periodLabel}
-            closedSummary={bpClosedSummary}
-            isOpen={bpOpen}
-            onToggle={() => setBpOpen(!bpOpen)}
-          >
-            {hasBpData ? (
-              <div className={ui.statsGridCompact}>
-                <HomeMetricCard
-                  label="Avg systolic"
-                  value={displayNumber(bpSummary.averageSystolic)}
-                />
-                <HomeMetricCard
-                  label="Avg diastolic"
-                  value={displayNumber(bpSummary.averageDiastolic)}
-                />
-                <HomeMetricCard label="Avg pulse" value={displayNumber(bpSummary.averagePulse)} />
-              </div>
-            ) : (
-              <p className={ui.emptyState}>No blood pressure readings in this period.</p>
-            )}
-            {bpChartPoints.length > 0 && (
-              <BloodPressureLineChart points={bpChartPoints} compact testId="home-bp-chart" />
-            )}
-          </AccordionPanel>
+        {settings.features.bloodPressure || settings.features.bloodSugar ? (
+          <div className="grid gap-3">
+            {settings.features.bloodPressure ? (
+              <AccordionPanel
+                title="Blood Pressure"
+                subtitle={periodLabel}
+                closedSummary={bpClosedSummary}
+                isOpen={bpOpen}
+                onToggle={() => setBpOpen(!bpOpen)}
+              >
+                {hasBpData ? (
+                  <div className={ui.statsGridCompact}>
+                    <HomeMetricCard
+                      label="Avg systolic"
+                      value={displayNumber(bpSummary.averageSystolic)}
+                    />
+                    <HomeMetricCard
+                      label="Avg diastolic"
+                      value={displayNumber(bpSummary.averageDiastolic)}
+                    />
+                    <HomeMetricCard
+                      label="Avg pulse"
+                      value={displayNumber(bpSummary.averagePulse)}
+                    />
+                  </div>
+                ) : (
+                  <p className={ui.emptyState}>No blood pressure readings in this period.</p>
+                )}
+                {bpChartPoints.length > 0 && (
+                  <BloodPressureLineChart points={bpChartPoints} compact testId="home-bp-chart" />
+                )}
+              </AccordionPanel>
+            ) : null}
 
-          <AccordionPanel
-            title="Blood Sugar"
-            subtitle={periodLabel}
-            closedSummary={sugarClosedSummary}
-            isOpen={sugarOpen}
-            onToggle={() => setSugarOpen(!sugarOpen)}
-          >
-            {hasSugarData ? (
-              <div className={ui.statsGridCompact}>
-                <HomeMetricCard
-                  label="Avg reading"
-                  value={`${displayNumber(sugarSummary.averageReading)} mg/dL`}
-                />
-                <HomeMetricCard
-                  label="Highest"
-                  value={`${displayNumber(sugarSummary.highestReading)} mg/dL`}
-                />
-                <HomeMetricCard
-                  label="Lowest"
-                  value={`${displayNumber(sugarSummary.lowestReading)} mg/dL`}
-                />
-              </div>
-            ) : (
-              <p className={ui.emptyState}>No blood sugar readings in this period.</p>
-            )}
-            {sugarChartPoints.length > 0 && (
-              <BloodSugarLineChart points={sugarChartPoints} compact testId="home-sugar-chart" />
-            )}
-          </AccordionPanel>
-        </div>
+            {settings.features.bloodSugar ? (
+              <AccordionPanel
+                title="Blood Sugar"
+                subtitle={periodLabel}
+                closedSummary={sugarClosedSummary}
+                isOpen={sugarOpen}
+                onToggle={() => setSugarOpen(!sugarOpen)}
+              >
+                {hasSugarData ? (
+                  <div className={ui.statsGridCompact}>
+                    <HomeMetricCard
+                      label="Avg reading"
+                      value={`${displayNumber(sugarSummary.averageReading)} mg/dL`}
+                    />
+                    <HomeMetricCard
+                      label="Highest"
+                      value={`${displayNumber(sugarSummary.highestReading)} mg/dL`}
+                    />
+                    <HomeMetricCard
+                      label="Lowest"
+                      value={`${displayNumber(sugarSummary.lowestReading)} mg/dL`}
+                    />
+                  </div>
+                ) : (
+                  <p className={ui.emptyState}>No blood sugar readings in this period.</p>
+                )}
+                {sugarChartPoints.length > 0 && (
+                  <BloodSugarLineChart
+                    points={sugarChartPoints}
+                    compact
+                    testId="home-sugar-chart"
+                  />
+                )}
+              </AccordionPanel>
+            ) : null}
+          </div>
+        ) : (
+          <p className={ui.emptyState}>Enable a reading type in settings to show charts.</p>
+        )}
       </section>
 
       <TimelineList
@@ -636,6 +787,7 @@ function renderActiveForm({
   activeForm,
   editingEvent,
   pickerFlow,
+  settings,
   onCancel,
   onBackToPicker,
   onPickReading,
@@ -648,6 +800,7 @@ function renderActiveForm({
   activeForm: FormName;
   editingEvent?: TimelineEvent;
   pickerFlow: boolean;
+  settings: AppSettings;
   onCancel: () => void;
   onBackToPicker: () => void;
   onPickReading: (type: 'bloodPressure' | 'bloodSugar') => void;
@@ -660,7 +813,7 @@ function renderActiveForm({
   const formCancel = pickerFlow && !editingEvent ? onBackToPicker : onCancel;
 
   if (activeForm === 'readingTypePicker') {
-    return <ReadingTypePicker onPick={onPickReading} onCancel={onCancel} />;
+    return <ReadingTypePicker settings={settings} onPick={onPickReading} onCancel={onCancel} />;
   }
 
   if (activeForm === 'bloodPressure') {
@@ -713,37 +866,47 @@ function renderActiveForm({
 }
 
 function ReadingTypePicker({
+  settings,
   onPick,
   onCancel,
 }: {
+  settings: AppSettings;
   onPick: (type: 'bloodPressure' | 'bloodSugar') => void;
   onCancel: () => void;
 }) {
   return (
     <div className="flex flex-col gap-4 py-2">
       <p className="m-0 text-sm text-health-muted">What type of reading would you like to add?</p>
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          className="flex flex-col items-center gap-3 rounded-[20px] border border-[rgb(19_139_131_/_16%)] bg-[linear-gradient(145deg,rgb(19_139_131_/_10%),rgb(255_255_255_/_62%))] px-4 py-6 font-extrabold text-health-ink transition-[transform,background-color] duration-150 hover:-translate-y-px"
-          onClick={() => onPick('bloodPressure')}
-        >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-health-teal text-white">
-            <Activity size={24} />
-          </span>
-          <span>Blood Pressure</span>
-        </button>
-        <button
-          type="button"
-          className="flex flex-col items-center gap-3 rounded-[20px] border border-[rgb(19_139_131_/_16%)] bg-[linear-gradient(145deg,rgb(19_139_131_/_10%),rgb(255_255_255_/_62%))] px-4 py-6 font-extrabold text-health-ink transition-[transform,background-color] duration-150 hover:-translate-y-px"
-          onClick={() => onPick('bloodSugar')}
-        >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#d97706] text-white">
-            <Droplets size={24} />
-          </span>
-          <span>Blood Sugar</span>
-        </button>
-      </div>
+      {settings.features.bloodPressure || settings.features.bloodSugar ? (
+        <div className="grid grid-cols-2 gap-3 max-[420px]:grid-cols-1">
+          {settings.features.bloodPressure ? (
+            <button
+              type="button"
+              className="flex flex-col items-center gap-3 rounded-[20px] border border-[rgb(19_139_131_/_16%)] bg-[linear-gradient(145deg,rgb(19_139_131_/_10%),rgb(255_255_255_/_62%))] px-4 py-6 font-extrabold text-health-ink transition-[transform,background-color] duration-150 hover:-translate-y-px"
+              onClick={() => onPick('bloodPressure')}
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-health-teal text-white">
+                <Activity size={24} />
+              </span>
+              <span>Blood Pressure</span>
+            </button>
+          ) : null}
+          {settings.features.bloodSugar ? (
+            <button
+              type="button"
+              className="flex flex-col items-center gap-3 rounded-[20px] border border-[rgb(19_139_131_/_16%)] bg-[linear-gradient(145deg,rgb(19_139_131_/_10%),rgb(255_255_255_/_62%))] px-4 py-6 font-extrabold text-health-ink transition-[transform,background-color] duration-150 hover:-translate-y-px"
+              onClick={() => onPick('bloodSugar')}
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#d97706] text-white">
+                <Droplets size={24} />
+              </span>
+              <span>Blood Sugar</span>
+            </button>
+          ) : null}
+        </div>
+      ) : (
+        <p className={ui.emptyState}>No reading types are enabled in settings.</p>
+      )}
       <button type="button" className={ui.secondaryButton} onClick={onCancel}>
         Cancel
       </button>

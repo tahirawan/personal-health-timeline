@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { TimelineEvent } from '../../../shared/types/domain';
+import { defaultAppSettings } from '../../../shared/types/settings';
 import { ReportsPanel } from './ReportsPanel';
 
 function makeEvent(partial: TimelineEvent): TimelineEvent {
@@ -36,7 +37,7 @@ describe('ReportsPanel', () => {
   it('renders report filters, BP stats, and context counts', async () => {
     const user = userEvent.setup();
 
-    render(<ReportsPanel events={events} onOpenBackup={vi.fn()} />);
+    render(<ReportsPanel events={events} settings={defaultAppSettings} onOpenBackup={vi.fn()} />);
 
     expect(screen.getByRole('combobox', { name: /report period/i })).toHaveValue('7days');
     expect(

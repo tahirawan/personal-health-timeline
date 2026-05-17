@@ -1,6 +1,6 @@
 # Personal Health Timeline Tracker
 
-Android-first PWA for recording blood pressure readings, meals, tablets, and notes in a private local timeline.
+Android-first PWA for recording blood pressure readings, blood sugar readings, meals, medicine, and notes in a private local timeline.
 
 The app is designed to be hosted on GitHub Pages and installed on Android as a Progressive Web App.
 
@@ -11,12 +11,13 @@ The app is designed to be hosted on GitHub Pages and installed on Android as a P
 This app helps record daily health events such as:
 
 - blood pressure readings
+- blood sugar readings
 - pulse
 - meal times and food notes
 - tablet / medication times
 - general notes
 
-It also provides reports and charts for blood pressure trends.
+It also provides configurable reports and charts for blood pressure and blood sugar trends.
 
 ---
 
@@ -33,14 +34,16 @@ For the MVP:
 - no remote database
 - no analytics
 
-All health data is stored locally on the user's device/browser using IndexedDB.
+All health timeline data is stored locally on the user's device/browser using IndexedDB.
+Local UI preferences, such as enabled event types, are stored in browser local storage.
 
 The initial React/Vite MVP scaffold is in place with:
 
-- timeline-based event logging for BP readings, meals, tablets, and notes
+- timeline-based event logging for BP readings, blood sugar readings, meals, tablets, and notes
 - local IndexedDB storage through a repository layer
-- Android-first quick add forms
+- Android-first forms behind a floating add menu
 - today timeline, full timeline, reports, and charts
+- configurable feature visibility for readings, meals, medicine, and notes
 - JSON backup export/import with merge by default
 - CSV export for BP readings
 - smart text import with preview
@@ -77,13 +80,16 @@ The app turns this style into a structured timeline.
 MVP features:
 
 - Add blood pressure reading
+- Add blood sugar reading
 - Add meal
 - Add tablet
 - Add note
 - Daily timeline
 - History view
+- Floating add menu with settings-controlled options
+- Timeline multi-filtering and 7/30/60 day range controls with older months collapsed
 - Edit/delete events
-- Reports and charts
+- Reports and expandable charts
 - JSON backup export
 - JSON backup file/paste import
 - CSV export for BP readings
@@ -99,11 +105,12 @@ MVP features:
 The app records multiple health events in one chronological timeline:
 
 - Blood pressure readings
+- Blood sugar readings
 - Meals
 - Tablet / medication events
 - Notes
 
-Reports and charts are generated from blood pressure readings only.
+Reports and charts are generated from enabled reading types.
 
 Meals and tablets are shown in timeline context.
 
@@ -174,9 +181,11 @@ Important logic should have tests.
 
 ## Data Storage
 
-The app stores records locally using IndexedDB.
+The app stores timeline records locally using IndexedDB.
 
 The user does not choose a file path for normal storage. The browser/PWA manages storage internally for this app.
+
+Feature visibility settings are local preferences stored in browser local storage.
 
 Because browser/PWA data can still be lost if app/browser data is cleared or the device is lost, backup/export is required.
 

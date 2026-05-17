@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { formatDisplayTime } from '../../../shared/lib/date';
+import { addLocalDays, formatDisplayTime, startOfLocalDay } from '../../../shared/lib/date';
 import { cn } from '../../../shared/lib/classNames';
 import { timelineIconClasses, ui } from '../../../shared/lib/uiStyles';
 import type {
@@ -21,22 +21,31 @@ import type {
   NoteEvent,
   TabletEvent,
   TimelineEvent,
+  TimelineEventType,
 } from '../../../shared/types/domain';
 import { groupEventsByLocalDate } from '../services/timelineService';
 
-const filterOptions = [
+const allFilterOption = {
+  label: 'All',
+  icon: LayoutGrid,
+  activeCls:
+    'bg-health-teal border-health-teal text-white shadow-[0_4px_12px_rgb(19_139_131_/_32%)]',
+  inactiveCls: 'border-[rgb(19_139_131_/_22%)] bg-[rgb(19_139_131_/_7%)] text-health-muted',
+  iconActiveCls: 'text-white',
+  iconInactiveCls: 'text-health-teal',
+};
+
+const filterOptions: Array<{
+  value: TimelineEventType;
+  label: string;
+  icon: typeof Activity;
+  activeCls: string;
+  inactiveCls: string;
+  iconActiveCls: string;
+  iconInactiveCls: string;
+}> = [
   {
-    value: 'all' as const,
-    label: 'All',
-    icon: LayoutGrid,
-    activeCls:
-      'bg-health-teal border-health-teal text-white shadow-[0_4px_12px_rgb(19_139_131_/_32%)]',
-    inactiveCls: 'border-[rgb(19_139_131_/_22%)] bg-[rgb(19_139_131_/_7%)] text-health-muted',
-    iconActiveCls: 'text-white',
-    iconInactiveCls: 'text-health-teal',
-  },
-  {
-    value: 'bloodPressure' as const,
+    value: 'bloodPressure',
     label: 'BP',
     icon: Activity,
     activeCls:
@@ -46,7 +55,7 @@ const filterOptions = [
     iconInactiveCls: 'text-health-teal',
   },
   {
-    value: 'bloodSugar' as const,
+    value: 'bloodSugar',
     label: 'Sugar',
     icon: Droplets,
     activeCls: 'bg-[#d97706] border-[#d97706] text-white shadow-[0_4px_12px_rgb(217_119_6_/_32%)]',
@@ -55,7 +64,7 @@ const filterOptions = [
     iconInactiveCls: 'text-[#d97706]',
   },
   {
-    value: 'meal' as const,
+    value: 'meal',
     label: 'Meals',
     icon: Utensils,
     activeCls:
@@ -65,7 +74,7 @@ const filterOptions = [
     iconInactiveCls: 'text-health-accent',
   },
   {
-    value: 'tablet' as const,
+    value: 'tablet',
     label: 'Medicine',
     icon: Pill,
     activeCls: 'bg-[#2e6ecb] border-[#2e6ecb] text-white shadow-[0_4px_12px_rgb(46_110_203_/_32%)]',
@@ -74,7 +83,7 @@ const filterOptions = [
     iconInactiveCls: 'text-[#2e6ecb]',
   },
   {
-    value: 'note' as const,
+    value: 'note',
     label: 'Notes',
     icon: StickyNote,
     activeCls:
@@ -85,13 +94,21 @@ const filterOptions = [
   },
 ];
 
-type FilterType = (typeof filterOptions)[number]['value'];
+type TimelineRangeDays = 7 | 30 | 60;
+
+const allFilterValues = filterOptions.map((option) => option.value);
+const timelineRangeOptions: Array<{ value: TimelineRangeDays; label: string }> = [
+  { value: 7, label: 'Last 7 days' },
+  { value: 30, label: 'Last 30 days' },
+  { value: 60, label: 'Last 60 days' },
+];
 
 type TimelineListProps = {
   events: TimelineEvent[];
   title?: string;
   emptyMessage?: string;
   showFilters?: boolean;
+  showRangeControls?: boolean;
   onEdit?: (event: TimelineEvent) => void;
   onDelete?: (event: TimelineEvent) => void;
 };
@@ -114,17 +131,48 @@ export function TimelineList({
   title = 'Timeline',
   emptyMessage = 'No timeline events yet.',
   showFilters = false,
+  showRangeControls = false,
   onEdit,
   onDelete,
 }: TimelineListProps) {
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [selectedFilters, setSelectedFilters] = useState<TimelineEventType[]>(allFilterValues);
+  const [rangeDays, setRangeDays] = useState<TimelineRangeDays>(7);
+  const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
 
-  const filteredEvents = useMemo(
-    () => (filter === 'all' ? events : events.filter((e) => e.type === filter)),
-    [events, filter],
+  const filteredEvents = useMemo(() => {
+    if (selectedFilters.length === allFilterValues.length) {
+      return events;
+    }
+
+    return events.filter((event) => selectedFilters.includes(event.type));
+  }, [events, selectedFilters]);
+
+  const timelineSections = useMemo(
+    () => getTimelineSections(filteredEvents, showRangeControls ? rangeDays : undefined),
+    [filteredEvents, rangeDays, showRangeControls],
   );
 
-  const activeFilterLabel = filterOptions.find((o) => o.value === filter)?.label ?? 'events';
+  const allFiltersSelected = selectedFilters.length === allFilterValues.length;
+
+  const toggleFilter = (value: TimelineEventType) => {
+    setSelectedFilters((currentFilters) =>
+      currentFilters.includes(value)
+        ? currentFilters.filter((currentFilter) => currentFilter !== value)
+        : [...currentFilters, value],
+    );
+  };
+
+  const showAllFilters = () => {
+    setSelectedFilters(allFilterValues);
+  };
+
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths((currentMonths) =>
+      currentMonths.includes(monthKey)
+        ? currentMonths.filter((currentMonth) => currentMonth !== monthKey)
+        : [...currentMonths, monthKey],
+    );
+  };
 
   return (
     <section className={ui.section} aria-labelledby="timeline-heading">
@@ -135,46 +183,65 @@ export function TimelineList({
       {showFilters && events.length > 0 && (
         <div
           className="mb-[18px] grid grid-cols-6 gap-2 max-[480px]:grid-cols-3"
-          role="tablist"
+          role="group"
           aria-label="Filter timeline by type"
         >
+          <FilterButton
+            icon={allFilterOption.icon}
+            label={allFilterOption.label}
+            isActive={allFiltersSelected}
+            activeCls={allFilterOption.activeCls}
+            inactiveCls={allFilterOption.inactiveCls}
+            iconActiveCls={allFilterOption.iconActiveCls}
+            iconInactiveCls={allFilterOption.iconInactiveCls}
+            onClick={showAllFilters}
+          />
           {filterOptions.map((option) => {
-            const Icon = option.icon;
-            const isActive = filter === option.value;
+            const isActive = selectedFilters.includes(option.value);
             return (
-              <button
+              <FilterButton
                 key={option.value}
-                role="tab"
-                type="button"
-                aria-selected={isActive}
-                className={cn(
-                  'flex flex-col items-center gap-1.5 rounded-[16px] border px-1.5 py-3 text-[0.7rem] font-bold transition-all duration-150',
-                  isActive ? option.activeCls : option.inactiveCls,
-                )}
-                onClick={() => setFilter(option.value)}
-              >
-                <Icon
-                  size={16}
-                  aria-hidden="true"
-                  className={cn(
-                    'transition-colors duration-150',
-                    isActive ? option.iconActiveCls : option.iconInactiveCls,
-                  )}
-                />
-                <span>{option.label}</span>
-              </button>
+                icon={option.icon}
+                label={option.label}
+                isActive={isActive}
+                activeCls={option.activeCls}
+                inactiveCls={option.inactiveCls}
+                iconActiveCls={option.iconActiveCls}
+                iconInactiveCls={option.iconInactiveCls}
+                onClick={() => toggleFilter(option.value)}
+              />
             );
           })}
         </div>
       )}
 
+      {showRangeControls && events.length > 0 ? (
+        <label className="mb-[18px] grid max-w-[220px] gap-2.5 font-extrabold text-health-ink">
+          Timeline range
+          <select
+            className={ui.input}
+            value={rangeDays}
+            onChange={(event) => {
+              setRangeDays(Number(event.target.value) as TimelineRangeDays);
+              setExpandedMonths([]);
+            }}
+          >
+            {timelineRangeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
       {events.length === 0 ? (
         <p className={ui.emptyState}>{emptyMessage}</p>
       ) : filteredEvents.length === 0 ? (
-        <p className={ui.emptyState}>No {activeFilterLabel.toLowerCase()} in the timeline.</p>
+        <p className={ui.emptyState}>No selected event types in the timeline.</p>
       ) : (
         <div className={ui.timelineGroups}>
-          {groupEventsByLocalDate(filteredEvents).map((group) => (
+          {groupEventsByLocalDate(timelineSections.recentEvents).map((group) => (
             <div key={group.dateKey}>
               <h3 className={cn(ui.h3, ui.timelineGroupTitle)}>{group.displayDate}</h3>
               <ol className={ui.timelineList}>
@@ -184,10 +251,138 @@ export function TimelineList({
               </ol>
             </div>
           ))}
+          {timelineSections.monthGroups.map((monthGroup) => {
+            const isExpanded = expandedMonths.includes(monthGroup.monthKey);
+            return (
+              <div key={monthGroup.monthKey}>
+                <button
+                  className="flex w-full items-center justify-between gap-3 rounded-[18px] border border-[rgb(19_139_131_/_16%)] bg-[rgb(19_139_131_/_8%)] px-4 py-3 text-left font-extrabold text-health-ink"
+                  type="button"
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleMonth(monthGroup.monthKey)}
+                >
+                  <span>{monthGroup.displayMonth}</span>
+                  <span className="text-sm text-health-muted">
+                    {monthGroup.events.length} events
+                  </span>
+                </button>
+                {isExpanded ? (
+                  <div className="mt-3">
+                    {groupEventsByLocalDate(monthGroup.events).map((group) => (
+                      <div key={group.dateKey}>
+                        <h3 className={cn(ui.h3, ui.timelineGroupTitle)}>{group.displayDate}</h3>
+                        <ol className={ui.timelineList}>
+                          {group.events.map((event) => (
+                            <TimelineItem
+                              event={event}
+                              key={event.id}
+                              onEdit={onEdit}
+                              onDelete={onDelete}
+                            />
+                          ))}
+                        </ol>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       )}
     </section>
   );
+}
+
+function FilterButton({
+  icon: Icon,
+  label,
+  isActive,
+  activeCls,
+  inactiveCls,
+  iconActiveCls,
+  iconInactiveCls,
+  onClick,
+}: {
+  icon: typeof Activity;
+  label: string;
+  isActive: boolean;
+  activeCls: string;
+  inactiveCls: string;
+  iconActiveCls: string;
+  iconInactiveCls: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={isActive}
+      className={cn(
+        'flex flex-col items-center gap-1.5 rounded-[16px] border px-1.5 py-3 text-[0.7rem] font-bold transition-all duration-150',
+        isActive ? activeCls : inactiveCls,
+      )}
+      onClick={onClick}
+    >
+      <Icon
+        size={16}
+        aria-hidden="true"
+        className={cn('transition-colors duration-150', isActive ? iconActiveCls : iconInactiveCls)}
+      />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+type TimelineSections = {
+  recentEvents: TimelineEvent[];
+  monthGroups: TimelineMonthGroup[];
+};
+
+type TimelineMonthGroup = {
+  monthKey: string;
+  displayMonth: string;
+  events: TimelineEvent[];
+};
+
+const monthFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'long',
+  year: 'numeric',
+});
+
+function getTimelineSections(
+  events: TimelineEvent[],
+  rangeDays?: TimelineRangeDays,
+): TimelineSections {
+  if (!rangeDays) {
+    return { recentEvents: events, monthGroups: [] };
+  }
+
+  const rangeStart = addLocalDays(startOfLocalDay(new Date()), -(rangeDays - 1)).getTime();
+  const recentEvents: TimelineEvent[] = [];
+  const monthGroups = new Map<string, TimelineEvent[]>();
+
+  for (const event of events) {
+    const eventDate = new Date(event.timestamp);
+
+    if (eventDate.getTime() >= rangeStart) {
+      recentEvents.push(event);
+      continue;
+    }
+
+    const monthKey = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`;
+    monthGroups.set(monthKey, [...(monthGroups.get(monthKey) ?? []), event]);
+  }
+
+  return {
+    recentEvents,
+    monthGroups: Array.from(monthGroups.entries())
+      .sort(([left], [right]) => right.localeCompare(left))
+      .map(([monthKey, monthEvents]) => ({
+        monthKey,
+        displayMonth: monthFormatter.format(new Date(`${monthKey}-01T00:00:00`)),
+        events: monthEvents,
+      })),
+  };
 }
 
 function TimelineItem({

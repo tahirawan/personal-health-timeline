@@ -100,7 +100,13 @@ IndexedDB -> repository -> hook/service -> timeline component
 Reports:
 
 ```text
-Timeline events -> filter BP events -> report service -> chart component
+Timeline events + app settings -> filter enabled reading events -> report service -> chart component
+```
+
+Settings:
+
+```text
+Settings UI -> settings repository -> browser local storage
 ```
 
 Backup export:

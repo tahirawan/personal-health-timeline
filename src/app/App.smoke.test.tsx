@@ -2,8 +2,10 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+import type { SettingsRepository } from '../shared/storage/settingsRepository';
 import type { TimelineRepository } from '../shared/storage/timelineRepository';
 import type { TimelineEvent } from '../shared/types/domain';
+import { defaultAppSettings, type AppSettings } from '../shared/types/settings';
 import { App } from './App';
 
 function createMemoryRepository(initialEvents: TimelineEvent[] = []): TimelineRepository {
@@ -41,15 +43,36 @@ function createMemoryRepository(initialEvents: TimelineEvent[] = []): TimelineRe
   };
 }
 
+function createMemorySettingsRepository(
+  initialSettings: AppSettings = defaultAppSettings,
+): SettingsRepository {
+  let settings = initialSettings;
+
+  return {
+    getSettings() {
+      return Promise.resolve(settings);
+    },
+    saveSettings(nextSettings) {
+      settings = nextSettings;
+      return Promise.resolve();
+    },
+  };
+}
+
 describe('App smoke flow', () => {
   it('adds a BP reading, shows it in today timeline, and includes it in reports', async () => {
     const user = userEvent.setup();
 
-    render(<App repository={createMemoryRepository()} />);
+    render(
+      <App
+        repository={createMemoryRepository()}
+        settingsStore={createMemorySettingsRepository()}
+      />,
+    );
 
-    await user.click(screen.getByRole('button', { name: /add reading/i }));
-    const dialog = await screen.findByRole('dialog');
-    await user.click(within(dialog).getByRole('button', { name: /blood pressure/i }));
+    await user.click(screen.getByRole('button', { name: /open add menu/i }));
+    const addMenu = await screen.findByRole('menu', { name: /add event options/i });
+    await user.click(within(addMenu).getByRole('menuitem', { name: /blood pressure/i }));
     await user.type(screen.getByLabelText(/systolic/i), '120');
     await user.type(screen.getByLabelText(/diastolic/i), '75');
     await user.type(screen.getByLabelText(/pulse optional/i), '74');
