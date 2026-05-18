@@ -91,7 +91,7 @@ export function BloodSugarLineChart({
             </button>
           ) : null}
         </div>
-        <div className={cn(ui.chartScrollArea, expandedView && 'min-h-0')}>
+        <div className={cn(ui.chartScrollArea, expandedView && 'h-full min-h-0')}>
           <div
             className={cn(ui.chartTrack, expandedView && 'h-full')}
             style={{ minWidth: getChartMinWidth(points.length) }}

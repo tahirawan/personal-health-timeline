@@ -34,21 +34,21 @@ export function ChartModal({ ariaLabel, children, closeLabel, onClose, title }: 
 
   return (
     <div
-      className="fixed inset-0 z-[80] h-[100svh] w-[100svw] overflow-hidden overscroll-none bg-[rgb(6_21_28)]"
+      className="fixed inset-0 z-[80] h-[100svh] w-[100svw] overflow-hidden overscroll-none bg-[rgb(6_21_28_/_62%)]"
       role="presentation"
       onClick={onClose}
     >
       <section
-        className="absolute inset-0 h-[100svh] w-[100svw] overflow-hidden bg-[linear-gradient(135deg,rgb(9_41_50),rgb(24_63_75))]"
+        className="grid h-[100svh] w-[100svw] grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-[linear-gradient(145deg,rgb(255_255_255),rgb(235_248_244))]"
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="absolute top-0 right-0 left-0 z-20 flex min-h-[calc(env(safe-area-inset-top)+4rem)] items-start justify-between gap-3 px-4 pt-[calc(env(safe-area-inset-top)+0.65rem)] text-white">
-          <h2 className="m-0 text-base font-extrabold">{title}</h2>
+        <header className="flex items-center justify-between gap-4 border-b border-[rgb(19_139_131_/_14%)] px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 text-health-ink shadow-[0_1px_0_rgb(255_255_255_/_64%)]">
+          <h2 className="m-0 text-[1.15rem] font-bold">{title}</h2>
           <button
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/24 bg-white/14 text-white shadow-[0_16px_36px_rgb(0_0_0_/_30%)] backdrop-blur-[12px] transition-colors duration-150 hover:bg-white/22 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(255_255_255_/_45%)]"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[rgb(19_139_131_/_14%)] bg-white/78 text-health-ink shadow-[0_10px_22px_rgb(6_21_28_/_8%)] transition-colors duration-150 hover:bg-white focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(19_139_131_/_30%)]"
             type="button"
             aria-label={closeLabel}
             onClick={onClose}
@@ -57,12 +57,8 @@ export function ChartModal({ ariaLabel, children, closeLabel, onClose, title }: 
           </button>
         </header>
 
-        <div className="absolute top-[calc(env(safe-area-inset-top)+4rem)] right-0 bottom-0 left-0 overflow-hidden p-2">
-          <div className="relative h-full w-full min-h-0 overflow-hidden">
-            <div className="grid h-full w-full min-h-0 landscape:h-full landscape:w-full portrait:absolute portrait:top-1/2 portrait:left-1/2 portrait:h-[calc(100svw-1rem)] portrait:w-[calc(100svh-env(safe-area-inset-top)-5rem)] portrait:min-w-0 portrait:-translate-x-1/2 portrait:-translate-y-1/2 portrait:rotate-90">
-              {children}
-            </div>
-          </div>
+        <div className="min-h-0 overflow-hidden p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] max-[420px]:p-2 max-[420px]:pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
+          <div className="grid h-full min-h-0">{children}</div>
         </div>
       </section>
     </div>
