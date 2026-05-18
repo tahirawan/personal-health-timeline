@@ -145,22 +145,17 @@ export const ui = {
   metricValue:
     'break-words text-[clamp(1.35rem,4vw,2rem)] leading-none text-health-ink max-[680px]:text-[1.65rem]',
   chartPanel: cn(
-    'mt-[18px] min-h-[244px] w-full overflow-hidden rounded-[20px] px-4 pt-4 pb-1 text-white max-[680px]:px-3.5',
-    'bg-[linear-gradient(135deg,rgb(9_41_50_/_96%),rgb(62_82_132_/_92%))]',
+    'mt-[18px] min-h-[292px] w-full max-w-full min-w-0 overflow-hidden rounded-[20px] border border-white/10 px-4 pt-4 pb-3 text-white shadow-[inset_0_1px_0_rgb(255_255_255_/_12%)] max-[680px]:px-3.5',
+    'bg-[radial-gradient(circle_at_18%_0%,rgb(19_139_131_/_42%),transparent_36%),linear-gradient(135deg,rgb(6_21_28_/_98%),rgb(35_58_88_/_94%)_54%,rgb(75_58_112_/_88%))]',
   ),
-  miniChartPanel: 'min-h-[190px]',
+  miniChartPanel: 'min-h-[212px]',
   chartLegend:
-    'm-0 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-xs font-extrabold text-white/84',
+    'm-0 flex list-none flex-wrap gap-x-4 gap-y-2 p-0 text-xs font-extrabold text-white/86',
   chartLegendItem: 'inline-flex items-center gap-2',
   chartScrollArea:
-    'mt-2 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:thin] [scrollbar-color:rgb(255_255_255_/_34%)_transparent]',
+    'mt-3 max-w-full min-w-0 overflow-x-auto overflow-y-hidden overscroll-x-contain rounded-[16px] [scrollbar-width:thin] [scrollbar-color:rgb(255_255_255_/_34%)_transparent]',
   chartTrack: 'flex min-w-full items-stretch',
-  chartStickyAxis:
-    'sticky left-0 z-10 w-11 shrink-0 bg-[linear-gradient(90deg,rgb(9_41_50_/_98%),rgb(9_41_50_/_90%)_72%,rgb(9_41_50_/_0%))] pr-2 text-right',
-  chartYAxisLabels:
-    'flex h-full flex-col justify-between pt-1.5 pb-8 text-[0.72rem] font-extrabold text-white/78',
-  chartCanvas: 'h-[240px] min-w-0 flex-1 max-[680px]:pr-2',
-  miniChartCanvas: 'h-[170px]',
+  chartCanvas: 'min-w-0 flex-1 rounded-[16px] bg-[rgb(255_255_255_/_5%)] pr-2 max-[680px]:pr-1',
   chartEmptyState: 'mb-0 px-[18px] text-white/80',
   linkPanel: cn(
     'mt-[18px] flex items-center justify-between gap-4 rounded-[20px] border border-[rgb(19_139_131_/_16%)] px-[18px] py-4 max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:rounded-2xl max-[680px]:px-3.5 max-[680px]:py-3',

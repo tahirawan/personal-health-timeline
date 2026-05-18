@@ -43,6 +43,56 @@ describe('backupService', () => {
     expect(preview.mealCount).toBe(1);
   });
 
+  it('normalizes legacy flat backup records into event data payloads', () => {
+    const preview = parseBackupJson(
+      JSON.stringify({
+        version: 1,
+        exportedAt: '2026-04-29T09:28:00.000Z',
+        events: [
+          {
+            id: 'bp-legacy',
+            type: 'bloodPressure',
+            timestamp: '2026-04-29T09:28:00.000Z',
+            createdAt: '2026-04-29T09:28:00.000Z',
+            updatedAt: '2026-04-29T09:28:00.000Z',
+            systolic: 120,
+            diastolic: 75,
+            pulse: 74,
+            mealRelation: 'after_breakfast',
+          },
+          {
+            id: 'meal-legacy',
+            type: 'meal',
+            timestamp: '2026-04-29T09:23:00.000Z',
+            createdAt: '2026-04-29T09:23:00.000Z',
+            updatedAt: '2026-04-29T09:23:00.000Z',
+            mealType: 'breakfast',
+            description: 'Egg sandwich',
+          },
+        ],
+      }),
+    );
+
+    expect(preview.totalEvents).toBe(2);
+    expect(preview.backup.events[0]).toMatchObject({
+      type: 'bloodPressure',
+      data: {
+        systolic: 120,
+        diastolic: 75,
+        pulse: 74,
+        mealRelation: 'after_breakfast',
+      },
+    });
+    expect(preview.backup.events[1]).toMatchObject({
+      type: 'meal',
+      data: {
+        mealType: 'breakfast',
+        description: 'Egg sandwich',
+      },
+    });
+    expect(Object.hasOwn(preview.backup.events[0], 'systolic')).toBe(false);
+  });
+
   it('rejects invalid backup records', () => {
     expect(() =>
       parseBackupJson(

@@ -4,6 +4,7 @@ import type { TimelineEvent } from '../../../shared/types/domain';
 import {
   calculateBloodPressureSummary,
   countTimelineEvents,
+  createChartPoints,
   filterBloodPressureEvents,
   filterEventsByRange,
   getReportDateRange,
@@ -66,6 +67,20 @@ describe('reportService', () => {
       meals: 1,
       tablets: 0,
       notes: 0,
+    });
+  });
+
+  it('creates sorted BP chart points from readings only', () => {
+    const points = createChartPoints(filterBloodPressureEvents([...mixedEvents].reverse()));
+
+    expect(points.map((point) => point.timestamp)).toEqual([
+      '2026-04-29T09:28:00.000Z',
+      '2026-04-29T21:44:00.000Z',
+    ]);
+    expect(points[0]).toMatchObject({
+      systolic: 120,
+      diastolic: 75,
+      pulse: 74,
     });
   });
 });

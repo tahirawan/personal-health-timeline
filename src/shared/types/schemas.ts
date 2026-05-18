@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { isValidIsoDateTime } from '../lib/date';
 import { mealRelations, mealTypes } from './domain';
+import { normalizeTimelineEventCandidate } from './eventNormalization';
 
 const isoDateTimeSchema = z.string().refine(isValidIsoDateTime, {
   message: 'Timestamp must be a valid ISO datetime.',
@@ -70,13 +71,18 @@ export const noteEventSchema = z.object({
   }),
 });
 
-export const timelineEventSchema = z.discriminatedUnion('type', [
+const currentTimelineEventSchema = z.discriminatedUnion('type', [
   bloodPressureEventSchema,
   bloodSugarEventSchema,
   mealEventSchema,
   tabletEventSchema,
   noteEventSchema,
 ]);
+
+export const timelineEventSchema = z.preprocess(
+  normalizeTimelineEventCandidate,
+  currentTimelineEventSchema,
+);
 
 export const backupFileSchema = z.object({
   version: z.literal(1),

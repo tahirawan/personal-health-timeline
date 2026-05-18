@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 
 import type { TimelineEvent } from '../types/domain';
+import { normalizeTimelineEventCandidate } from '../types/eventNormalization';
 
 export class HealthTimelineDatabase extends Dexie {
   timelineEvents!: Table<TimelineEvent, string>;
@@ -77,6 +78,27 @@ export class HealthTimelineDatabase extends Dexie {
             }
           });
       });
+
+    // Version 4: normalizes any remaining legacy flat records into the
+    // current event.data payload shape used by timeline and report charts.
+    this.version(4)
+      .stores({
+        timelineEvents: 'id, type, timestamp, createdAt',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('timelineEvents')
+          .toCollection()
+          .modify((event: Record<string, unknown>) => {
+            const normalized = normalizeTimelineEventCandidate(event);
+
+            if (!isRecord(normalized)) {
+              return;
+            }
+
+            replaceRecord(event, normalized);
+          });
+      });
   }
 }
 
@@ -92,4 +114,18 @@ export async function requestPersistentStorage(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function replaceRecord(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  Object.keys(target).forEach((key) => {
+    delete target[key];
+  });
+
+  Object.entries(source).forEach(([key, value]) => {
+    target[key] = value;
+  });
 }

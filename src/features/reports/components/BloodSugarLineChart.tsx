@@ -24,6 +24,7 @@ import {
   formatChartTooltipLabel,
 } from './chartTooltip';
 import { ChartModal } from './ChartModal';
+import { useChartHeight, useRotatedMobileChart } from './useChartHeight';
 
 type BloodSugarLineChartProps = {
   points: BloodSugarChartPoint[];
@@ -34,10 +35,10 @@ type BloodSugarLineChartProps = {
 };
 
 const referenceLines = [
-  { y: 70, label: '70 Low', stroke: '#38bdf8' },
-  { y: 100, label: '100 Pre-diabetic', stroke: '#f59e0b' },
-  { y: 126, label: '126 Diabetic', stroke: '#ef4444' },
-  { y: 140, label: '140 Post-meal limit', stroke: '#f97316' },
+  { y: 70, label: '70 guide', stroke: '#38bdf8' },
+  { y: 100, label: '100 guide', stroke: '#f59e0b' },
+  { y: 126, label: '126 guide', stroke: '#ef4444' },
+  { y: 140, label: '140 guide', stroke: '#f97316' },
 ];
 
 export function BloodSugarLineChart({
@@ -48,8 +49,8 @@ export function BloodSugarLineChart({
   testId,
 }: BloodSugarLineChartProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const chartHeight = expandedView ? '100%' : compact ? 170 : 240;
-  const axisHeight = expandedView ? '100%' : chartHeight;
+  const chartHeight = useChartHeight({ compact, expandedView });
+  const rotateMobileChart = useRotatedMobileChart(expandedView);
   const chartScale = getChartScale(points);
 
   return (
@@ -58,7 +59,7 @@ export function BloodSugarLineChart({
         className={cn(
           ui.chartPanel,
           compact && ui.miniChartPanel,
-          expandedView && 'm-0 grid h-full !min-h-0 grid-rows-[auto_minmax(0,1fr)]',
+          expandedView && 'm-0 grid !min-h-0 grid-rows-[auto_minmax(0,1fr)]',
         )}
         aria-label="Blood sugar trend chart"
         data-testid={testId}
@@ -91,30 +92,19 @@ export function BloodSugarLineChart({
             </button>
           ) : null}
         </div>
-        <div className={cn(ui.chartScrollArea, expandedView && 'h-full min-h-0')}>
+        <div className={ui.chartScrollArea}>
           <div
-            className={cn(ui.chartTrack, expandedView && 'h-full')}
-            style={{ minWidth: getChartMinWidth(points.length) }}
+            className={ui.chartTrack}
+            style={{ minWidth: getChartMinWidth(points.length, rotateMobileChart) }}
           >
-            <div
-              className={ui.chartStickyAxis}
-              style={{ height: axisHeight }}
-              aria-label="Chart y-axis values"
-            >
-              <div className={ui.chartYAxisLabels}>
-                {[...chartScale.ticks].reverse().map((tick) => (
-                  <span key={tick}>{tick}</span>
-                ))}
-              </div>
-            </div>
-            <div
-              className={cn(
-                ui.chartCanvas,
-                expandedView ? 'h-full' : compact && ui.miniChartCanvas,
-              )}
-            >
-              <ResponsiveContainer width="100%" height={chartHeight}>
-                <LineChart data={points} margin={{ top: 8, right: 18, left: 0, bottom: 0 }}>
+            <div className={ui.chartCanvas} style={{ height: chartHeight }}>
+              <ResponsiveContainer
+                width="100%"
+                height={chartHeight}
+                minWidth={320}
+                minHeight={chartHeight}
+              >
+                <LineChart data={points} margin={{ top: 14, right: 18, left: 2, bottom: 2 }}>
                   <CartesianGrid strokeDasharray="4 4" stroke="rgb(255 255 255 / 16%)" />
                   <XAxis
                     dataKey="timestamp"
@@ -127,7 +117,15 @@ export function BloodSugarLineChart({
                     height={30}
                     tickMargin={6}
                   />
-                  <YAxis domain={chartScale.domain} hide ticks={chartScale.ticks} />
+                  <YAxis
+                    axisLine={false}
+                    domain={chartScale.domain}
+                    tick={{ fill: '#eaf6f4', fontSize: 11, fontWeight: 800 }}
+                    tickLine={false}
+                    tickMargin={6}
+                    ticks={chartScale.ticks}
+                    width={40}
+                  />
                   <Tooltip
                     contentStyle={chartTooltipContentStyle}
                     cursor={chartTooltipCursor}
@@ -161,8 +159,11 @@ export function BloodSugarLineChart({
                       stroke: '#ffffff',
                       strokeWidth: 2,
                     }}
+                    isAnimationActive={false}
                     name="Blood Sugar"
                     stroke="#d97706"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     strokeWidth={3}
                     type="monotone"
                   />
@@ -205,7 +206,7 @@ function getChartScale(points: BloodSugarChartPoint[]): {
   const high = Math.max(...allValues);
   const paddedLow = Math.max(0, low - 15);
   const paddedHigh = high + 15;
-  const step = getNiceStep((paddedHigh - paddedLow) / 4);
+  const step = getNiceStep((paddedHigh - paddedLow || 80) / 4);
   const min = Math.max(0, Math.floor(paddedLow / step) * step);
   const max = Math.ceil(paddedHigh / step) * step;
   const ticks: number[] = [];
@@ -226,7 +227,8 @@ function getNiceStep(rawStep: number): number {
   return 10 * magnitude;
 }
 
-function getChartMinWidth(pointCount: number): string {
+function getChartMinWidth(pointCount: number, fitContainer: boolean): string {
+  if (fitContainer) return '100%';
   if (pointCount <= 4) return '100%';
   return `${Math.max(600, Math.min(1280, pointCount * 64))}px`;
 }
