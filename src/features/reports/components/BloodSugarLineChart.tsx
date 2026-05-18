@@ -1,4 +1,4 @@
-import { Maximize2, X } from 'lucide-react';
+import { Maximize2 } from 'lucide-react';
 import { useState } from 'react';
 import {
   CartesianGrid,
@@ -23,6 +23,7 @@ import {
   formatChartTick,
   formatChartTooltipLabel,
 } from './chartTooltip';
+import { ChartModal } from './ChartModal';
 
 type BloodSugarLineChartProps = {
   points: BloodSugarChartPoint[];
@@ -172,32 +173,19 @@ export function BloodSugarLineChart({
         </div>
       </div>
       {isExpanded ? (
-        <div
-          className="fixed inset-0 z-40 overflow-hidden bg-[rgb(6_21_28_/_92%)] p-2 backdrop-blur-[16px]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Expanded blood sugar chart"
+        <ChartModal
+          ariaLabel="Expanded blood sugar chart"
+          closeLabel="Close expanded blood sugar chart"
+          onClose={() => setIsExpanded(false)}
+          title="Blood sugar chart"
         >
-          <button
-            className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] right-3 z-50 grid h-11 w-11 place-items-center rounded-full border border-white/24 bg-white/14 text-white shadow-[0_16px_36px_rgb(0_0_0_/_30%)] backdrop-blur-[12px] transition-colors duration-150 hover:bg-white/22 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[rgb(255_255_255_/_45%)]"
-            type="button"
-            aria-label="Close expanded blood sugar chart"
-            onClick={() => setIsExpanded(false)}
-          >
-            <X size={22} />
-          </button>
-          <div className="absolute top-1/2 left-1/2 grid h-[100svh] w-[100svw] min-h-0 -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_minmax(0,1fr)] gap-3 p-2 portrait:h-[100svw] portrait:w-[100svh] portrait:rotate-90 landscape:h-[100svh] landscape:w-[100svw]">
-            <div className="flex items-center justify-between gap-3 pr-14 text-white">
-              <h2 className="m-0 text-lg font-extrabold">Blood sugar chart</h2>
-            </div>
-            <BloodSugarLineChart
-              allowExpand={false}
-              expandedView
-              points={points}
-              testId={testId ? `${testId}-expanded` : undefined}
-            />
-          </div>
-        </div>
+          <BloodSugarLineChart
+            allowExpand={false}
+            expandedView
+            points={points}
+            testId={testId ? `${testId}-expanded` : undefined}
+          />
+        </ChartModal>
       ) : null}
     </>
   );
